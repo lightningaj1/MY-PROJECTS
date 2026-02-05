@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+
+<h1>Add new mineral</h1>
+
+<form method="post" action="/admin/upload" enctype="multipart/form-data">
+    <label>Name</label>
+    <input name="name" placeholder="Mineral name" required>
+
+    <label>Formula</label>
+    <input name="formula" placeholder="Formula">
+
+    <label>Properties</label>
+    <textarea name="properties" placeholder="Properties"></textarea>
+
+    <label>Uses</label>
+    <textarea name="uses" placeholder="Uses"></textarea>
+
+    <label>Economic importance</label>
+    <textarea name="economic" placeholder="Economic importance"></textarea>
+
+    <label>Major countries</label>
+    <input name="countries" placeholder="Major countries (comma separated)">
+
+    image: <label>Image</label>
+    <input type="file" name="image">
+
+    <button type="submit">Add mineral</button>
+    </form>
+
+{% endblock %}

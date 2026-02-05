@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Global Mineral Map</h2>
+<div id="map" style="height: 500px;"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Create map
+    var map = L.map('map').setView([0, 20], 2);
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Add markers from flask
+    var locations = {{ markers | safe}};
+
+    locations.forEach(loc => {
+        L.marker([loc.lat, loc.lng]).addTo(map)
+        .bindPopup(`<b>${loc.name}</b><br>${loc.country}`);
+    });
+</script>
+
+{% endblock %}

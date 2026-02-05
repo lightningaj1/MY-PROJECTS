@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Your Favorite Minerals</h2>
+<ul>
+    {% for m in minerals %}
+    <li><a href="/mineral/{{ m.id }}">{{ m.name }}</a></li>
+    {% else %}
+    <li>You have not added any favorite minerals yet.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
