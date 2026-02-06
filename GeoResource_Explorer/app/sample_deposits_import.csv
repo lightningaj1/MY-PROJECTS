@@ -1,0 +1,6 @@
+name,mineral_type,ore_type,region,location_name,latitude,longitude,estimated_reserves_tonnes,average_grade,confidence_level,status,discovery_year,notes
+Juba North Gold,Gold,Vein deposits,Central Equatoria,North of Juba city,5.00,31.65,350000,2.8,indicated,exploration,2018,USGS Report 2018
+Torit East Extension,Gold,Primary ore,Eastern Equatoria,Torit East zone,4.42,32.65,280000,3.0,probable,exploration,2019,Pan African Resources field data
+Bentiu Copper Zone,Copper,Primary ore,Unity,Bentiu Basin extension,9.50,30.80,1200000,0.75,possible,exploration,2020,World Bank geological assessment
+Upper Nile Diamond,Diamond,Placer deposits,Upper Nile,Upper Nile alluvial,10.35,33.00,50000,0.85,indicated,exploration,2017,Academic research
+Lakes Salt Deposit,Rare Earth Elements,Primary ore,Lakes,Panyalar Salt Flats,6.85,31.20,600000,40.0,confirmed,inactive,2015,Government survey data

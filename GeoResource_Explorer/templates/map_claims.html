@@ -100,9 +100,9 @@
         const popupContent = `
             <div style="min-width: 200px;">
                 <h6>${claim.claim_id}</h6>
-                <p class="mb-1"><strong>Company:</strong> ${claim.company_name}</p>
-                <p class="mb-1"><strong>Type:</strong> ${claim.claim_type}</p>
-                <p class="mb-1"><strong>Area:</strong> ${claim.area_hectares:,} hectares</p>
+                <p class="mb-1"><strong>Company:</strong> ${claim.company_name || 'N/A'}</p>
+                <p class="mb-1"><strong>Type:</strong> ${claim.claim_type || 'N/A'}</p>
+                <p class="mb-1"><strong>Area:</strong> ${claim.area_hectares ? Math.round(claim.area_hectares).toLocaleString() : 'N/A'} hectares</p>
                 <p class="mb-1"><strong>Status:</strong> <span class="badge" style="background: ${color};">${claim.status}</span></p>
                 ${claim.deposit_name ? `<p class="mb-0"><strong>Associated Deposit:</strong> ${claim.deposit_name}</p>` : ''}
                 <a href="/claims/${claim.id}" class="btn btn-sm btn-primary mt-2">View Details</a>

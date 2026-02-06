@@ -5,6 +5,7 @@ Advanced Leaflet.js features for geology and South Sudan data
 
 from flask import render_template, jsonify, request
 from app.db import get_db
+from app.helpers import login_required
 
 def mapping_routes(app):
     
@@ -72,12 +73,14 @@ def mapping_routes(app):
         minerals = [dict(m) for m in minerals]  # Convert to dicts
         
         # Get deposits with icons based on mineral type
+        # Handle deposits with or without mineral_type_id
         deposits = db.execute("""
             SELECT d.id, d.name, d.latitude, d.longitude, d.region,
                    mt.id as mineral_id, mt.name as mineral, mt.category,
                    d.estimated_reserves_tonnes, d.average_grade, d.status, d.confidence_level
             FROM deposits d
-            JOIN mineral_types mt ON d.mineral_type_id = mt.id
+            LEFT JOIN mineral_types mt ON d.mineral_type_id = mt.id
+            WHERE d.latitude IS NOT NULL AND d.longitude IS NOT NULL
             ORDER BY d.status DESC
         """).fetchall()
         deposits = [dict(d) for d in deposits]  # Convert to dicts
@@ -227,6 +230,7 @@ def mapping_routes(app):
     # ============================================================
     
     @app.route("/analytics")
+    @login_required
     def analytics():
         """Analytics dashboard with charts and statistics"""
         db = get_db()

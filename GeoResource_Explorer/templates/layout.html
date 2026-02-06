@@ -63,6 +63,7 @@
 
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('map_page') }}"><i class="fas fa-map"></i> Map</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('prices') }}"><i class="fas fa-coins"></i> Prices</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('learn_home') }}"><i class="fas fa-book"></i> Learn</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('favorites') }}"><i class="fas fa-heart"></i> Favorites</a></li>
                             
                             {% if session.get('user_id') and is_admin %}
@@ -104,9 +105,13 @@
                         <h6>Quick Links</h6>
                         <ul class="list-unstyled">
                             <li><a href="{{ url_for('home') }}" class="text-white-50">Home</a></li>
+                            {% if session.get('user_id') %}
                             <li><a href="{{ url_for('sudan_overview') }}" class="text-white-50">South Sudan Overview</a></li>
                             <li><a href="{{ url_for('analytics') }}" class="text-white-50">Analytics</a></li>
                             <li><a href="{{ url_for('regulations') }}" class="text-white-50">Regulations</a></li>
+                            {% else %}
+                            <li><a href="{{ url_for('login') }}" class="text-white-50">Login to Access More</a></li>
+                            {% endif %}
                         </ul>
                     </div>
                     <div class="col-md-4">

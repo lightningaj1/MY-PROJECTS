@@ -1,0 +1,176 @@
+{% extends "layout.html" %}
+
+{% block title %}Learning Center - Geology & Minerals{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2 text-white">
+                    <i class="fas fa-book text-light me-3"></i>Learning Center
+                </h1>
+                <p class="lead text-white-50">Master the fundamentals of geology, minerals, and natural resources</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="display-6 fw-bold text-white">{{ lessons|length }}</div>
+                <p class="text-white-50">Learning Modules</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-primary mb-2">{{ lessons|length }}</div>
+                    <p class="text-muted mb-0"><i class="fas fa-graduation-cap me-2"></i>Total Lessons</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-info mb-2">{{ categories|length }}</div>
+                    <p class="text-muted mb-0"><i class="fas fa-layer-group me-2"></i>Categories</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 fw-bold text-success mb-2"><i class="fas fa-gem"></i></div>
+                    <p class="text-muted mb-0">Beginner Friendly</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search lessons...">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <select id="categoryFilter" class="form-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Lessons Grid -->
+    <div class="row g-4">
+        {% if lessons %}
+            {% for lesson in lessons %}
+            <div class="col-md-6 lg-col-4 lesson-card" data-category="{{ lesson.category }}" data-title="{{ lesson.title|lower }}">
+                <div class="card h-100 shadow-sm border-0 hover-shadow">
+                    {% if lesson.image %}
+                    <img src="{{ lesson.image }}" class="card-img-top" alt="{{ lesson.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-book text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-primary">{{ lesson.category }}</span>
+                            <span class="badge 
+                                {% if lesson.difficulty_level == 'beginner' %}bg-success
+                                {% elif lesson.difficulty_level == 'intermediate' %}bg-info
+                                {% else %}bg-danger
+                                {% endif %}">
+                                {{ lesson.difficulty_level|capitalize }}
+                            </span>
+                        </div>
+                        <h5 class="card-title">{{ lesson.title }}</h5>
+                        <p class="card-text text-muted flex-grow-1">{{ lesson.summary }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt"></i> 
+                            {{ lesson.created_at[:10] if lesson.created_at else 'N/A' }}
+                        </small>
+                        <a href="/learn/{{ lesson.id }}" class="btn btn-primary btn-sm mt-3">
+                            <i class="fas fa-arrow-right me-2"></i>Read Lesson
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No learning materials available yet. Check back soon!
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .lesson-card {
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const lessonCards = document.querySelectorAll('.lesson-card');
+    
+    function filterLessons() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        
+        lessonCards.forEach(card => {
+            const title = card.getAttribute('data-title');
+            const category = card.getAttribute('data-category');
+            
+            const matchesSearch = title.includes(searchTerm);
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+            
+            if (matchesSearch && matchesCategory) {
+                card.style.display = '';
+                card.style.animation = 'fadeIn 0.3s ease-in';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    searchInput.addEventListener('input', filterLessons);
+    categoryFilter.addEventListener('change', filterLessons);
+</script>
+
+{% endblock %}

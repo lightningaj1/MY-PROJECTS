@@ -11,6 +11,8 @@ A Flask-based web application for exploring mineral resources, their properties,
 - Global mineral distribution map
 - Commodity price tracking
 - Image uploads for minerals
+- **QGIS Integration:** Import mineral deposits and mining claims directly from QGIS
+- **Interactive Maps:** Populated with real geospatial data from QGIS exports
 
 ## Project Structure
 
@@ -74,6 +76,32 @@ The app will start on `http://localhost:5000`
 
 - **Username:** `admin`
 - **Password:** `Admin@123`
+
+## QGIS Data Import
+
+GeoResource Explorer now supports importing mineral deposits and mining claims directly from QGIS!
+
+### Quick Start
+
+1. **Export your data from QGIS** as GeoJSON or CSV
+2. **Login as admin** and go to **Admin Dashboard** → **QGIS Data Import**
+3. **Upload your file** and watch the maps populate with your data
+
+### Supported Formats
+- **GeoJSON** - Standard geospatial format (recommended)
+- **CSV** - Comma-separated values with coordinates
+- **JSON** - Alternative JSON format
+
+### Example Data
+
+Sample files are provided in `samples/`:
+- `sample_deposits.geojson` - Example mineral deposits
+- `sample_claims.csv` - Example mining claims
+
+### Full Documentation
+
+For detailed QGIS export instructions, field mappings, and troubleshooting:
+➡️ **[QGIS_IMPORT_GUIDE.md](QGIS_IMPORT_GUIDE.md)**
 
 ## Database Schema
 

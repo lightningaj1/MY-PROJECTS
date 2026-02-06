@@ -45,7 +45,19 @@ def mineral_routes(app):
         mineral = db.execute("SELECT * FROM minerals WHERE id = ?", (id,)).fetchone()
         if not mineral:
             return redirect("/minerals")
-        return render_template("mineral.html", mineral=mineral)
+        
+        mineral = dict(mineral)
+        
+        # Get related learning content
+        related_lessons = db.execute("""
+            SELECT id, title, category, summary, difficulty_level
+            FROM learning_content
+            WHERE related_minerals LIKE ?
+            LIMIT 5
+        """, (f'%{mineral["name"]}%',)).fetchall()
+        related_lessons = [dict(l) for l in related_lessons]
+        
+        return render_template("mineral.html", mineral=mineral, related_lessons=related_lessons)
 
     @app.route("/search")
     @login_required

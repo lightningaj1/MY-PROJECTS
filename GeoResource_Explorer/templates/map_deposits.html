@@ -97,11 +97,11 @@
         const popupContent = `
             <div style="min-width: 200px;">
                 <h6>${deposit.name}</h6>
-                <p class="mb-1"><strong>Mineral:</strong> ${deposit.mineral}</p>
-                <p class="mb-1"><strong>Region:</strong> ${deposit.region}</p>
+                <p class="mb-1"><strong>Mineral:</strong> ${deposit.mineral || 'N/A'}</p>
+                <p class="mb-1"><strong>Region:</strong> ${deposit.region || 'N/A'}</p>
                 <p class="mb-1"><strong>Status:</strong> <span class="badge badge-${deposit.status === 'active' ? 'success' : 'secondary'}">${deposit.status}</span></p>
-                <p class="mb-1"><strong>Grade:</strong> ${deposit.average_grade}%</p>
-                <p class="mb-1"><strong>Reserves:</strong> ${Math.round(deposit.estimated_reserves_tonnes):,} tonnes</p>
+                <p class="mb-1"><strong>Grade:</strong> ${deposit.average_grade || 'N/A'}%</p>
+                <p class="mb-1"><strong>Reserves:</strong> ${deposit.estimated_reserves_tonnes ? Math.round(deposit.estimated_reserves_tonnes).toLocaleString() : 'N/A'} tonnes</p>
                 <p class="mb-0"><strong>Confidence:</strong> ${deposit.confidence_level}</p>
                 <a href="/deposits/${deposit.id}" class="btn btn-sm btn-primary mt-2">View Details</a>
             </div>

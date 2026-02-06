@@ -1,0 +1,200 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ lesson.title }} - Learning Center{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Lesson Header -->
+            <div class="card border-0 shadow-sm mb-4">
+                {% if lesson.image %}
+                <img src="{{ lesson.image }}" class="card-img-top" alt="{{ lesson.title }}" style="height: 350px; object-fit: cover;">
+                {% else %}
+                <div class="bg-light" style="height: 350px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-book text-muted" style="font-size: 5rem;"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2">{{ lesson.category }}</span>
+                        <span class="badge 
+                            {% if lesson.difficulty_level == 'beginner' %}bg-success
+                            {% elif lesson.difficulty_level == 'intermediate' %}bg-info
+                            {% else %}bg-danger
+                            {% endif %}">
+                            {{ lesson.difficulty_level|capitalize }}
+                        </span>
+                    </div>
+                    <h1 class="card-title fw-bold mb-3">{{ lesson.title }}</h1>
+                    <p class="lead text-muted mb-0">{{ lesson.summary }}</p>
+                </div>
+            </div>
+
+            <!-- Lesson Content -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="lesson-content">
+                        {{ lesson.content | safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Minerals Section -->
+            {% if related_minerals %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gem text-primary me-2"></i>Related Minerals
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for mineral in related_minerals %}
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                {% if mineral.image %}
+                                <img src="{{ mineral.image }}" alt="{{ mineral.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 15px;">
+                                {% else %}
+                                <div style="width: 80px; height: 80px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                    <i class="fas fa-gem text-muted"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1">{{ mineral.name }}</h6>
+                                    <p class="text-muted mb-2" style="font-size: 0.9rem;">{{ mineral.formula }}</p>
+                                    <a href="/minerals#{{ mineral.name }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Back Button -->
+            <a href="/learn" class="btn btn-outline-secondary mb-5">
+                <i class="fas fa-arrow-left me-2"></i>Back to Learning Center
+            </a>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Lesson Info Card -->
+            <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Lesson Info</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Category</small>
+                        <p class="mb-0"><strong>{{ lesson.category }}</strong></p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Difficulty Level</small>
+                        <p class="mb-0">
+                            <span class="badge 
+                                {% if lesson.difficulty_level == 'beginner' %}bg-success
+                                {% elif lesson.difficulty_level == 'intermediate' %}bg-info
+                                {% else %}bg-danger
+                                {% endif %}">
+                                {{ lesson.difficulty_level|capitalize }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Published</small>
+                        <p class="mb-0">{{ lesson.created_at[:10] if lesson.created_at else 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Related Lessons Card -->
+            {% if related_lessons %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Related Lessons</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for rel_lesson in related_lessons %}
+                        <a href="/learn/{{ rel_lesson.id }}" class="list-group-item list-group-item-action border-0 px-0 py-2">
+                            <h6 class="mb-1 text-primary">{{ rel_lesson.title }}</h6>
+                            <small class="text-muted">
+                                <span class="badge bg-light text-dark">{{ rel_lesson.category }}</span>
+                                <span class="badge 
+                                    {% if rel_lesson.difficulty_level == 'beginner' %}bg-success
+                                    {% elif rel_lesson.difficulty_level == 'intermediate' %}bg-info
+                                    {% else %}bg-danger
+                                    {% endif %}">
+                                    {{ rel_lesson.difficulty_level|capitalize }}
+                                </span>
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .lesson-content {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #333;
+    }
+    
+    .lesson-content h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+    
+    .lesson-content h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-top: 1.25rem;
+        margin-bottom: 0.75rem;
+        color: #34495e;
+    }
+    
+    .lesson-content p {
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-content ul, .lesson-content ol {
+        margin-bottom: 1rem;
+        margin-left: 1.5rem;
+    }
+    
+    .lesson-content li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .lesson-content strong {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    .lesson-content em {
+        font-style: italic;
+        color: #555;
+    }
+    
+    .lesson-content blockquote {
+        border-left: 4px solid #667eea;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: #666;
+    }
+</style>
+
+{% endblock %}

@@ -223,8 +223,8 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 // Add geocoder
 L.Control.geocoder().addTo(map);
 
-// Marker data from Flask
-const markers = {{ markers | safe }};
+// Marker data from Flask (safe default to empty array)
+const markers = {{ markers|default([])|tojson }};
 const markerGroup = L.featureGroup();
 
 // Create markers with color coding

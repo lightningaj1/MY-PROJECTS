@@ -6,6 +6,7 @@ Handles deposits, regulations, claims, and exploration data
 from flask import render_template, request, jsonify, redirect, session
 from app.db import get_db
 from app.roles import require_geologist, require_explorer, is_geologist, is_explorer, is_admin, has_permission
+from app.helpers import login_required
 
 def professional_routes(app):
     
@@ -14,6 +15,7 @@ def professional_routes(app):
     # ============================================================
     
     @app.route("/sudan")
+    @login_required
     def sudan_overview():
         """South Sudan geological overview"""
         db = get_db()
@@ -47,6 +49,7 @@ def professional_routes(app):
         return render_template("sudan.html", states=states, stats=stats)
     
     @app.route("/sudan/<state_name>")
+    @login_required
     def sudan_state(state_name):
         """State-specific geological profile"""
         db = get_db()
@@ -209,6 +212,7 @@ def professional_routes(app):
     # ============================================================
     
     @app.route("/regulations")
+    @login_required
     def regulations():
         """South Sudan mining regulations and requirements"""
         db = get_db()

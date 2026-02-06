@@ -1,0 +1,62 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jabal Al-Akhdar Gold Deposit",
+        "latitude": 15.5,
+        "longitude": 32.5,
+        "country": "South Sudan",
+        "region": "Eastern Equatoria",
+        "status": "Active",
+        "reserves": 2500000,
+        "grade": 2.8,
+        "confidence": "High",
+        "year": 2005
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [32.5, 15.5]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nile Copper Prospect",
+        "latitude": 14.2,
+        "longitude": 31.8,
+        "country": "South Sudan",
+        "region": "Upper Nile",
+        "status": "Prospect",
+        "reserves": 1800000,
+        "grade": 1.5,
+        "confidence": "Medium",
+        "year": 2018
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [31.8, 14.2]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sudd Iron Ore Deposit",
+        "latitude": 13.8,
+        "longitude": 30.5,
+        "country": "South Sudan",
+        "region": "Jonglei",
+        "status": "Historical",
+        "reserves": 5000000,
+        "grade": 65.5,
+        "confidence": "High",
+        "year": 1995
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [30.5, 13.8]
+      }
+    }
+  ]
+}
