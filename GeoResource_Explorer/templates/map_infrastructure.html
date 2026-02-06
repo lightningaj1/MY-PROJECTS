@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block title %}Infrastructure Map{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 0;">
+    <div class="row" style="margin: 0;">
+        
+        <!-- Map -->
+        <div class="col-md-9" style="padding: 0;">
+            <div id="map" style="width: 100%; height: calc(100vh - 60px);"></div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="col-md-3" style="padding: 15px; background: #f8f9fa; max-height: calc(100vh - 60px); overflow-y: auto;">
+            <h5>Infrastructure</h5>
+            
+            <!-- Type Filter -->
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <div id="typeFilters">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select id="statusFilter" class="form-control form-control-sm">
+                    <option value="">All Status</option>
+                    <option value="operational">Operational</option>
+                    <option value="under_construction">Under Construction</option>
+                    <option value="planned">Planned</option>
+                </select>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Summary by Type</h6>
+                </div>
+                <div class="card-body" id="infraStats" style="font-size: 0.9em;">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Legend</h6>
+                </div>
+                <div class="card-body" style="font-size: 0.85em;">
+                    <p class="mb-1"><span style="font-size: 18px;">🛣️</span> Roads</p>
+                    <p class="mb-1"><span style="font-size: 18px;">✈️</span> Airports</p>
+                    <p class="mb-1"><span style="font-size: 18px;">⚓</span> Ports</p>
+                    <p class="mb-1"><span style="font-size: 18px;">⚡</span> Power Plants</p>
+                    <p class="mb-0"><span style="font-size: 18px;">💧</span> Water Systems</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    const allInfra = {{ infrastructure|tojson }};
+    let markers = {};
+    
+    // Initialize map
+    const map = L.map('map').setView([6.5, 31.5], 4);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Infrastructure icons and colors
+    const infraConfig = {
+        'Road': { emoji: '🛣️', color: '#555555' },
+        'Airport': { emoji: '✈️', color: '#0066cc' },
+        'Port': { emoji: '⚓', color: '#003366' },
+        'Power': { emoji: '⚡', color: '#ffcc00' },
+        'Water': { emoji: '💧', color: '#0099ff' }
+    };
+    
+    // Status colors
+    const statusColors = {
+        'operational': '#28a745',
+        'under_construction': '#ffc107',
+        'planned': '#0099ff'
+    };
+    
+    function createMarker(infra) {
+        const config = infraConfig[infra.type] || { emoji: '⭐', color: '#000000' };
+        const statusColor = statusColors[infra.status] || '#999999';
+        
+        const icon = L.divIcon({
+            html: `<div style="font-size: 24px; filter: drop-shadow(0 0 3px ${statusColor}); text-shadow: 0 0 10px ${statusColor};">${config.emoji}</div>`,
+            className: 'infra-marker'
+        });
+        
+        const marker = L.marker([infra.latitude, infra.longitude], {icon: icon});
+        
+        const popupContent = `
+            <div style="min-width: 180px;">
+                <h6>${infra.name}</h6>
+                <p class="mb-1"><strong>Type:</strong> ${infra.type}</p>
+                <p class="mb-1"><strong>State:</strong> ${infra.state}</p>
+                <p class="mb-0"><strong>Status:</strong> <span class="badge" style="background: ${statusColor};">${infra.status}</span></p>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        marker.infra = infra;
+        
+        return marker;
+    }
+    
+    function getUniqueTypes() {
+        return [...new Set(allInfra.map(i => i.type))].sort();
+    }
+    
+    function filterAndDisplay() {
+        // Clear markers
+        Object.values(markers).forEach(m => m.remove());
+        markers = {};
+        
+        const statusFilter = document.getElementById('statusFilter').value;
+        const selectedTypes = Array.from(document.querySelectorAll('input[name="typeFilter"]:checked'))
+            .map(cb => cb.value);
+        
+        let filtered = allInfra.filter(i => {
+            if (statusFilter && i.status !== statusFilter) return false;
+            if (selectedTypes.length > 0 && !selectedTypes.includes(i.type)) return false;
+            return true;
+        });
+        
+        // Add markers
+        filtered.forEach(infra => {
+            const marker = createMarker(infra);
+            marker.addTo(map);
+            markers[infra.id] = marker;
+        });
+        
+        // Update statistics
+        updateStats();
+    }
+    
+    function updateStats() {
+        const typeStats = {};
+        allInfra.forEach(i => {
+            typeStats[i.type] = (typeStats[i.type] || 0) + 1;
+        });
+        
+        let statsHtml = '';
+        for (const [type, count] of Object.entries(typeStats)) {
+            const config = infraConfig[type] || { emoji: '⭐' };
+            statsHtml += `<p class="mb-1"><strong>${config.emoji} ${type}:</strong> ${count}</p>`;
+        }
+        document.getElementById('infraStats').innerHTML = statsHtml;
+    }
+    
+    // Initialize type filters
+    const typeFilters = getUniqueTypes();
+    let filterHtml = '';
+    typeFilters.forEach(type => {
+        filterHtml += `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="typeFilter" value="${type}" id="type_${type}" checked>
+                <label class="form-check-label" for="type_${type}">
+                    ${type}
+                </label>
+            </div>
+        `;
+    });
+    document.getElementById('typeFilters').innerHTML = filterHtml;
+    
+    // Event listeners
+    document.querySelectorAll('input[name="typeFilter"]').forEach(cb => {
+        cb.addEventListener('change', filterAndDisplay);
+    });
+    document.getElementById('statusFilter').addEventListener('change', filterAndDisplay);
+    
+    // Initial display
+    updateStats();
+    filterAndDisplay();
+</script>
+{% endblock %}

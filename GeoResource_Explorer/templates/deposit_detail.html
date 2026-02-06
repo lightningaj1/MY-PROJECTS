@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ deposit.name }} - Deposit Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>{{ deposit.name }}</h2>
+        </div>
+        <div class="col-md-4 text-right">
+            <span class="badge badge-{% if deposit.status == 'active' %}success{% else %}secondary{% endif %}">{{ deposit.status }}</span>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Basic Information</h6></div>
+                <div class="card-body">
+                    <p><strong>Mineral:</strong> {{ deposit.mineral_name }}</p>
+                    <p><strong>Ore Type:</strong> {{ deposit.ore_name }}</p>
+                    <p><strong>Location:</strong> {{ deposit.location_name }}, {{ deposit.country }}</p>
+                    <p><strong>Region:</strong> {{ deposit.region }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Geological Data</h6></div>
+                <div class="card-body">
+                    <p><strong>Grade:</strong> {{ deposit.average_grade }}%</p>
+                    <p><strong>Reserves:</strong> {{ "{:,.0f}".format(deposit.estimated_reserves_tonnes) }} tonnes</p>
+                    <p><strong>Confidence Level:</strong> <span class="badge badge-info">{{ deposit.confidence_level }}</span></p>
+                    <p><strong>Latitude/Longitude:</strong> {{ "%.2f"|format(deposit.latitude) }}, {{ "%.2f"|format(deposit.longitude) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header"><h6 class="mb-0">Assay Results ({{ assays|length }})</h6></div>
+        <div class="card-body">
+            {% if assays %}
+            <table class="table table-sm"><thead><tr><th>Depth</th><th>Au (ppm)</th><th>Ag (ppm)</th><th>Cu (ppm)</th></tr></thead>
+                <tbody>{% for a in assays %}<tr><td>{{ a.depth_from }}-{{ a.depth_to }}m</td><td>{{ a.au_ppm }}</td><td>{{ a.ag_ppm }}</td><td>{{ a.cu_ppm }}</td></tr>{% endfor %}</tbody>
+            </table>
+            {% else %}<p class="text-muted">No assay data</p>{% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header"><h6 class="mb-0">Resource Estimates ({{ resources|length }})</h6></div>
+        <div class="card-body">
+            {% if resources %}
+            <table class="table table-sm"><thead><tr><th>Type</th><th>Tonnes</th><th>Grade</th><th>Date</th></tr></thead>
+                <tbody>{% for r in resources %}<tr><td>{{ r.resource_type }}</td><td>{{ "{:,.0f}".format(r.tonnes) }}</td><td>{{ r.grade }}%</td><td>{{ r.estimate_date }}</td></tr>{% endfor %}</tbody>
+            </table>
+            {% else %}<p class="text-muted">No resource estimates</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

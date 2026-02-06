@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Regulation Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ regulation.title }}</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5 class="mb-3">Description</h5>
+            <p>{{ regulation.description }}</p>
+            
+            <h5 class="mb-3">Key Requirements</h5>
+            <p>{{ regulation.requirements }}</p>
+            
+            <hr>
+            
+            <p><strong>Responsible Authority:</strong> {{ regulation.responsible_authority }}</p>
+            <p><strong>Effective Date:</strong> {{ regulation.effective_date }}</p>
+            
+            <a href="/regulations" class="btn btn-secondary mt-3">Back to Regulations</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

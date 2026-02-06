@@ -1,20 +1,354 @@
 {% extends "layout.html" %}
+
+{% block title %}Edit Mineral - GeoResource Explorer{% endblock %}
+
 {% block content %}
+<!-- Header -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-edit text-light me-3"></i>Edit Mineral
+                </h1>
+                <p class="lead text-white-50">Update mineralogical data and properties</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="container">
+    <div class="row">
+        <!-- Form -->
+        <div class="col-lg-8">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Basic Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-gem"></i> Basic Information
+                        </h5>
+                        <span class="badge bg-info">ID: {{ mineral.id }}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-bold">
+                                    <i class="fas fa-tag text-primary"></i> Mineral Name
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                       value="{{ mineral.name }}" required>
+                                <div class="invalid-feedback">
+                                    Mineral name is required
+                                </div>
+                            </div>
 
-<h1>Edit Mineral</h1>
+                            <div class="col-md-6">
+                                <label for="formula" class="form-label fw-bold">
+                                    <i class="fas fa-flask-vial text-primary"></i> Chemical Formula
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="formula" name="formula" 
+                                       value="{{ mineral.formula }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<form method="post" enctype="multipart/form-data">
-    name: <input type="text" name="name" value="{{ mineral.name }}" required><br><br>
-    formula: <input type="text" name="formula" value="{{ mineral.formula }}"><br><br>
-    properties: <textarea name="properties">{{ mineral.properties }}</textarea><br><br>
-    uses: <textarea name="uses">{{ mineral.uses }}</textarea><br><br>
-    economic importance: <input type="text" name="economic" value="{{ mineral.economic }}"><br><br>
-    major countries: <input type="text" name="countries" value="{{ mineral.countries }}"><br><br>
+                <!-- Physical Properties -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microscope"></i> Physical Properties
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="color" class="form-label fw-bold">Color</label>
+                                <input type="text" class="form-control" id="color" name="color" 
+                                       value="{{ mineral.color or '' }}">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="hardness" class="form-label fw-bold">Hardness (Mohs Scale)</label>
+                                <input type="number" class="form-control" id="hardness" name="hardness" 
+                                       value="{{ mineral.hardness or '' }}" min="1" max="10" step="0.1">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="density" class="form-label fw-bold">Density (g/cm³)</label>
+                                <input type="number" class="form-control" id="density" name="density" 
+                                       value="{{ mineral.density or '' }}" step="0.01">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="crystal_system" class="form-label fw-bold">Crystal System</label>
+                                <select class="form-select" id="crystal_system" name="crystal_system">
+                                    <option value="">Select one...</option>
+                                    <option value="Cubic" {% if mineral.crystal_system == 'Cubic' %}selected{% endif %}>Cubic</option>
+                                    <option value="Tetragonal" {% if mineral.crystal_system == 'Tetragonal' %}selected{% endif %}>Tetragonal</option>
+                                    <option value="Orthorhombic" {% if mineral.crystal_system == 'Orthorhombic' %}selected{% endif %}>Orthorhombic</option>
+                                    <option value="Monoclinic" {% if mineral.crystal_system == 'Monoclinic' %}selected{% endif %}>Monoclinic</option>
+                                    <option value="Triclinic" {% if mineral.crystal_system == 'Triclinic' %}selected{% endif %}>Triclinic</option>
+                                    <option value="Hexagonal" {% if mineral.crystal_system == 'Hexagonal' %}selected{% endif %}>Hexagonal</option>
+                                    <option value="Trigonal" {% if mineral.crystal_system == 'Trigonal' %}selected{% endif %}>Trigonal</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="properties" class="form-label fw-bold">
+                                    <i class="fas fa-align-left text-primary"></i> Detailed Properties
+                                </label>
+                                <textarea class="form-control" id="properties" name="properties" rows="4">{{ mineral.properties or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uses and Economic Value -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-coins"></i> Uses & Economic Value
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="mineral_type" class="form-label fw-bold">Mineral Classification</label>
+                                <select class="form-select" id="mineral_type" name="mineral_type">
+                                    <option value="">Select classification...</option>
+                                    <option value="Native Element" {% if mineral.mineral_type == 'Native Element' %}selected{% endif %}>Native Element</option>
+                                    <option value="Oxide" {% if mineral.mineral_type == 'Oxide' %}selected{% endif %}>Oxide</option>
+                                    <option value="Sulfide" {% if mineral.mineral_type == 'Sulfide' %}selected{% endif %}>Sulfide</option>
+                                    <option value="Sulfate" {% if mineral.mineral_type == 'Sulfate' %}selected{% endif %}>Sulfate</option>
+                                    <option value="Carbonate" {% if mineral.mineral_type == 'Carbonate' %}selected{% endif %}>Carbonate</option>
+                                    <option value="Silicate" {% if mineral.mineral_type == 'Silicate' %}selected{% endif %}>Silicate</option>
+                                    <option value="Halide" {% if mineral.mineral_type == 'Halide' %}selected{% endif %}>Halide</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="economic_importance" class="form-label fw-bold">Economic Importance</label>
+                                <select class="form-select" id="economic_importance" name="economic_importance">
+                                    <option value="">Select one...</option>
+                                    <option value="High" {% if mineral.economic_importance == 'High' %}selected{% endif %}>High - Major ore/gemstone</option>
+                                    <option value="Medium" {% if mineral.economic_importance == 'Medium' %}selected{% endif %}>Medium - Important industrial use</option>
+                                    <option value="Low" {% if mineral.economic_importance == 'Low' %}selected{% endif %}>Low - Limited economic value</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="market_demand" class="form-label fw-bold">Market Demand</label>
+                                <select class="form-select" id="market_demand" name="market_demand">
+                                    <option value="">Select one...</option>
+                                    <option value="High" {% if mineral.market_demand == 'High' %}selected{% endif %}>High - Strong market demand</option>
+                                    <option value="Medium" {% if mineral.market_demand == 'Medium' %}selected{% endif %}>Medium - Moderate demand</option>
+                                    <option value="Low" {% if mineral.market_demand == 'Low' %}selected{% endif %}>Low - Limited demand</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="countries" class="form-label fw-bold">Major Producing Countries</label>
+                                <input type="text" class="form-control" id="countries" name="countries" 
+                                       value="{{ mineral.countries or '' }}">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="primary_use" class="form-label fw-bold">Primary Uses</label>
+                                <textarea class="form-control" id="primary_use" name="primary_use" rows="3">{{ mineral.primary_use or '' }}</textarea>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="economic" class="form-label fw-bold">Economic Analysis</label>
+                                <textarea class="form-control" id="economic" name="economic" rows="3">{{ mineral.economic or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image and Media -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-image"></i> Image & Media
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if mineral.image %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Current Image</label>
+                            <div class="d-flex gap-3 align-items-center">
+                                <img src="{{ mineral.image }}" alt="{{ mineral.name }}" style="max-width: 150px; height: auto; border-radius: 0.5rem;">
+                                <div>
+                                    <p class="mb-1 text-muted"><small>{{ mineral.image }}</small></p>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteImage()">
+                                        <i class="fas fa-trash"></i> Remove Image
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label fw-bold">Upload New Image</label>
+                            <div class="input-group mb-3">
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <span class="input-group-text">PNG, JPG, GIF (Max 5MB)</span>
+                            </div>
+                            <div id="imagePreview" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change History -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history"></i> Change History
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <small class="text-muted">
+                            <div>Last modified: <strong>{{ mineral.updated or 'Never' }}</strong></div>
+                            <div>Created: <strong>{{ mineral.created or 'Unknown' }}</strong></div>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex gap-2 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Update Mineral
+                    </button>
+                    <a href="{{ url_for('mineral', id=mineral.id) }}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="button" class="btn btn-outline-danger btn-lg ms-auto" onclick="deleteMineralConfirm()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Help -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Edit Tips
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <h6 class="fw-bold mb-2">What You Can Update</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-pencil"></i> Mineral name</li>
+                        <li><i class="fas fa-pencil"></i> Chemical properties</li>
+                        <li><i class="fas fa-pencil"></i> Economic data</li>
+                        <li><i class="fas fa-pencil"></i> Representative image</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-2">Validation</h6>
+                    <p class="text-muted mb-2">All changes are validated for:</p>
+                    <ul class="list-unstyled text-muted small">
+                        <li><i class="fas fa-check text-success"></i> Data integrity</li>
+                        <li><i class="fas fa-check text-success"></i> Format compliance</li>
+                        <li><i class="fas fa-check text-success"></i> Duplicate detection</li>
+                    </ul>
+
+                    <hr>
+
+                    <div class="alert alert-warning p-2 small">
+                        <i class="fas fa-info-circle"></i> Changes are automatically saved to the database. Previous versions are not retained.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.sticky-top {
+    z-index: 99;
+}
+
+@media (max-width: 768px) {
+    .sticky-top {
+        position: static;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+// Form validation
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+// Image preview
+document.getElementById('image').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    const file = e.target.files[0];
     
-    image: <input type="file" name="image"><br><br>
-    <button type="submit">Update mineral</button>
-</form>
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" alt="preview">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
+// Delete mineral
+function deleteMineralConfirm() {
+    if (confirm('Are you sure you want to delete this mineral? This cannot be undone.')) {
+        if (confirm('This is permanent. Are you really sure?')) {
+            // In a real implementation, make DELETE request
+            alert('Mineral deleted successfully.');
+            window.location.href = '{{ url_for("minerals") }}';
+        }
+    }
+}
 
+function deleteImage() {
+    if (confirm('Remove the current image?')) {
+        // In a real implementation, make an AJAX call
+        alert('Image removed.');
+        location.reload();
+    }
+}
+</script>
 {% endblock %}

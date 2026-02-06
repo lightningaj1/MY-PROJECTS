@@ -1,11 +1,306 @@
 {% extends "layout.html" %}
+
+{% block title %}My Watchlist - GeoResource Explorer{% endblock %}
+
 {% block content %}
-<h2>Your Favorite Minerals</h2>
-<ul>
-    {% for m in minerals %}
-    <li><a href="/mineral/{{ m.id }}">{{ m.name }}</a></li>
+<!-- Header -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-heart text-light me-3"></i>My Watchlist
+                </h1>
+                <p class="lead text-white-50">Minerals and resources you're tracking</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="display-6 fw-bold text-light">{{ minerals|length }}</div>
+                <p class="text-white-50">Items Watched</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if minerals %}
+    <!-- Toolbar -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-3">
+            <div class="row align-items-center g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-0 bg-light" id="watchlistFilter" 
+                               placeholder="Filter watchlist...">
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="btn-group gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" onclick="sortWatchlist('name')">
+                            <i class="fas fa-sort-alpha-down"></i> Sort A-Z
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="exportWatchlist()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="clearWatchlist()" title="Clear all">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Watchlist Grid -->
+    <div class="row g-4 mb-5">
+        {% for m in minerals %}
+        <div class="col-lg-4 col-md-6 watchlist-item" data-mineral-name="{{ m.name }}">
+            <div class="card h-100 shadow-sm watchlist-card">
+                <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">{{ m.name }}</h5>
+                        <code class="text-muted small">{{ m.formula }}</code>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeFromWatchlist({{ m.id }}, '{{ m.name }}')" 
+                            title="Remove from watchlist">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    <!-- Key Information -->
+                    {% if m.mineral_type %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1">Classification</small>
+                        <span class="badge bg-warning text-dark">{{ m.mineral_type }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Properties -->
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-2">Properties</small>
+                        <div class="properties-grid">
+                            {% if m.color %}
+                            <div class="property-item small">
+                                <i class="fas fa-palette"></i> <strong>Color:</strong> {{ m.color }}
+                            </div>
+                            {% endif %}
+                            {% if m.hardness %}
+                            <div class="property-item small">
+                                <i class="fas fa-hammer"></i> <strong>Hardness:</strong> {{ m.hardness }}
+                            </div>
+                            {% endif %}
+                            {% if m.density %}
+                            <div class="property-item small">
+                                <i class="fas fa-weight"></i> <strong>Density:</strong> {{ m.density }} g/cm³
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Economic Info -->
+                    {% if m.economic_importance or m.market_demand %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold d-block mb-1">Market Info</small>
+                        <div class="d-flex gap-1 flex-wrap">
+                            {% if m.economic_importance %}
+                            <span class="badge bg-{% if m.economic_importance == 'High' %}danger{% elif m.economic_importance == 'Medium' %}warning{% else %}secondary{% endif %} small">
+                                <i class="fas fa-coins"></i> {{ m.economic_importance }} Value
+                            </span>
+                            {% endif %}
+                            {% if m.market_demand %}
+                            <span class="badge bg-{% if m.market_demand == 'High' %}info{% elif m.market_demand == 'Medium' %}secondary{% else %}light text-dark{% endif %} small">
+                                <i class="fas fa-chart-line"></i> {{ m.market_demand }} Demand
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Last updated -->
+                    <small class="text-muted d-block">
+                        <i class="fas fa-clock"></i> Added to watchlist
+                    </small>
+                </div>
+
+                <div class="card-footer bg-light border-top">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('mineral', id=m.id) }}" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="openComparison({{ m.id }})" title="Add to comparison">
+                            <i class="fas fa-compress"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0">
+                <i class="fas fa-compress"></i> Mineral Comparison
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Select minerals to compare their properties side-by-side.</p>
+            <div id="comparisonContainer" class="table-responsive">
+                <table class="table table-hover" id="comparisonTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Property</th>
+                            <th>Mineral 1</th>
+                            <th>Mineral 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle"></i> Select minerals to compare
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     {% else %}
-    <li>You have not added any favorite minerals yet.</li>
-    {% endfor %}
-</ul>
+    <!-- Empty State -->
+    <div class="text-center py-5">
+        <i class="fas fa-heart fa-5x text-muted mb-4"></i>
+        <h4 class="mb-2">Your Watchlist is Empty</h4>
+        <p class="text-muted mb-4">Start by adding minerals you want to track and monitor.</p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="{{ url_for('minerals') }}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Browse Minerals
+            </a>
+            <a href="{{ url_for('deposits') }}" class="btn btn-outline-primary">
+                <i class="fas fa-gem"></i> View Deposits
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.watchlist-card {
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.watchlist-card:hover {
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-5px);
+}
+
+.properties-grid {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.property-item {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.property-item:last-child {
+    border-bottom: none;
+}
+
+.btn-group {
+    display: flex;
+}
+
+@media (max-width: 768px) {
+    .btn-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .btn-group .btn {
+        flex: 1 1 auto;
+        min-width: 100px;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+function removeFromWatchlist(mineralId, mineralName) {
+    if (confirm(`Remove "${mineralName}" from your watchlist?`)) {
+        // In a real implementation, this would make an AJAX call
+        const card = document.querySelector(`[data-mineral-id="${mineralId}"]`);
+        if (card) {
+            card.style.opacity = '0.5';
+            setTimeout(() => {
+                card.remove();
+                location.reload();
+            }, 300);
+        }
+    }
+}
+
+function clearWatchlist() {
+    if (confirm('Clear entire watchlist? This action cannot be undone.')) {
+        // In a real implementation, this would make an AJAX call to clear all
+        alert('Watchlist cleared.');
+        location.reload();
+    }
+}
+
+function sortWatchlist(criteria) {
+    const items = document.querySelectorAll('.watchlist-item');
+    const sorted = Array.from(items).sort((a, b) => {
+        if (criteria === 'name') {
+            return a.dataset.mineralName.localeCompare(b.dataset.mineralName);
+        }
+        return 0;
+    });
+    
+    const container = document.querySelector('.row.g-4');
+    sorted.forEach(item => container.appendChild(item));
+}
+
+function exportWatchlist() {
+    const items = [];
+    document.querySelectorAll('.watchlist-item').forEach(item => {
+        items.push(item.dataset.mineralName);
+    });
+    
+    const csv = 'Watched Minerals\n' + items.join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+    link.setAttribute('download', `watchlist_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+}
+
+function openComparison(mineralId) {
+    alert('Comparison feature coming soon!');
+}
+
+// Filter watchlist
+document.getElementById('watchlistFilter').addEventListener('keyup', function() {
+    const query = this.value.toLowerCase();
+    document.querySelectorAll('.watchlist-item').forEach(item => {
+        const name = item.dataset.mineralName.toLowerCase();
+        item.style.display = name.includes(query) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}

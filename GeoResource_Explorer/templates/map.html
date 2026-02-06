@@ -1,25 +1,314 @@
 {% extends "layout.html" %}
 
-{% block content %}
-<h2>Global Mineral Map</h2>
-<div id="map" style="height: 500px;"></div>
+{% block title %}Global Mineral Distribution Map{% endblock %}
 
+{% block content %}
+<!-- Header -->
+<div class="bg-gradient py-4 mb-4">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-map text-light me-3"></i>Global Mineral Distribution Map
+        </h1>
+        <p class="lead text-white-50">Interactive map showing mineral deposits and geological sites worldwide</p>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row g-0 h-100" style="min-height: 70vh;">
+        <!-- Sidebar Controls -->
+        <div class="col-lg-3 bg-light border-end" style="max-height: 70vh; overflow-y: auto;">
+            <div class="p-4">
+                <!-- Map Controls -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h6 class="mb-0">
+                            <i class="fas fa-sliders-h"></i> Map Controls
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-layer-group text-primary"></i> Show Layers
+                            </label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="layer_deposits" checked>
+                                <label class="form-check-label" for="layer_deposits">
+                                    Mineral Deposits
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="layer_exploration" checked>
+                                <label class="form-check-label" for="layer_exploration">
+                                    Exploration Sites
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="layer_infrastructure" checked>
+                                <label class="form-check-label" for="layer_infrastructure">
+                                    Infrastructure
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Mineral Filter -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-filter text-warning"></i> Filter by Mineral
+                            </label>
+                            <select class="form-select form-select-sm" id="mineralFilter">
+                                <option value="">All Minerals</option>
+                                <option value="gold">Gold</option>
+                                <option value="copper">Copper</option>
+                                <option value="iron">Iron</option>
+                                <option value="silver">Silver</option>
+                                <option value="diamonds">Diamonds</option>
+                            </select>
+                        </div>
+
+                        <hr>
+
+                        <!-- Status Filter -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-signal text-success"></i> Filter by Status
+                            </label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="status_active" checked>
+                                <label class="form-check-label" for="status_active">
+                                    <span class="badge bg-success">Active</span> Active
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="status_prospect" checked>
+                                <label class="form-check-label" for="status_prospect">
+                                    <span class="badge bg-info">Prospect</span> Prospect
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="status_historical" checked>
+                                <label class="form-check-label" for="status_historical">
+                                    <span class="badge bg-secondary">Historical</span> Historical
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Statistics -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-chart-bar text-info"></i> Map Statistics
+                            </label>
+                            <div class="alert alert-info small p-2 mb-2">
+                                <strong>Total Deposits:</strong><br>
+                                <span id="totalDeposits">0</span>
+                            </div>
+                            <div class="alert alert-warning small p-2">
+                                <strong>Active Sites:</strong><br>
+                                <span id="activeSites">0</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Legend -->
+                        <div>
+                            <label class="form-label fw-bold small">
+                                <i class="fas fa-key text-primary"></i> Legend
+                            </label>
+                            <div class="small">
+                                <div class="mb-2">
+                                    <i class="fas fa-map-pin text-danger" style="font-size: 1.5rem;"></i> Active Deposit
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-map-pin text-info" style="font-size: 1.5rem;"></i> Prospect
+                                </div>
+                                <div class="mb-2">
+                                    <i class="fas fa-map-pin text-secondary" style="font-size: 1.5rem;"></i> Historical
+                                </div>
+                                <div>
+                                    <i class="fas fa-building text-warning"></i> Infrastructure
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-sm" onclick="resetMap()">
+                                <i class="fas fa-redo"></i> Reset Map
+                            </button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadMapData()">
+                                <i class="fas fa-download"></i> Download Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div class="col-lg-9" id="mapContainer">
+            <div id="map" style="height: 100%; width: 100%; border-radius: 0;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Styles & Links -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
+
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#map {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-tip {
+    background-color: white;
+}
+
+@media (max-width: 992px) {
+    .col-lg-3 {
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+    
+    .row {
+        flex-direction: column-reverse;
+    }
+    
+    #map {
+        min-height: 400px;
+    }
+}
+
+@media print {
+    .bg-light, .sidebar, .btn {
+        display: none !important;
+    }
+}
+</style>
+
+<!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
 
 <script>
-    // Create map
-    var map = L.map('map').setView([0, 20], 2);
+// Initialize map
+const map = L.map('map').setView([20, 0], 2);
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+// Add tile layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
 
-    // Add markers from flask
-    var locations = {{ markers | safe}};
+// Add geocoder
+L.Control.geocoder().addTo(map);
 
-    locations.forEach(loc => {
-        L.marker([loc.lat, loc.lng]).addTo(map)
-        .bindPopup(`<b>${loc.name}</b><br>${loc.country}`);
+// Marker data from Flask
+const markers = {{ markers | safe }};
+const markerGroup = L.featureGroup();
+
+// Create markers with color coding
+markers.forEach(loc => {
+    let color = '#dc3545'; // red for active
+    let icon = 'check-circle'; // active
+    
+    if (loc.status === 'prospect') {
+        color = '#17a2b8'; // blue
+        icon = 'compass';
+    } else if (loc.status === 'historical') {
+        color = '#6c757d'; // gray
+        icon = 'history';
+    }
+    
+    const markerIcon = L.divIcon({
+        html: `<div style="background-color: ${color}; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-${icon}"></i></div>`,
+        className: '',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -15]
     });
-</script>
+    
+    const marker = L.marker([loc.lat, loc.lng], { icon: markerIcon })
+        .bindPopup(`
+            <div style="min-width: 250px;">
+                <h6>${loc.name}</h6>
+                <p class="small mb-2">${loc.country}</p>
+                <span class="badge bg-${loc.status === 'active' ? 'success' : loc.status === 'prospect' ? 'info' : 'secondary'}">
+                    ${loc.status}
+                </span>
+                <div class="mt-2">
+                    <a href="/deposits/${loc.id}" class="btn btn-sm btn-primary">View Details</a>
+                </div>
+            </div>
+        `)
+        .addTo(markerGroup);
+});
 
+markerGroup.addTo(map);
+
+// Update statistics
+document.getElementById('totalDeposits').textContent = markers.length;
+document.getElementById('activeSites').textContent = markers.filter(m => m.status === 'active').length;
+
+// Map controls
+document.getElementById('layer_deposits').addEventListener('change', function() {
+    if (this.checked) {
+        markerGroup.addTo(map);
+    } else {
+        map.removeLayer(markerGroup);
+    }
+});
+
+// Reset map
+function resetMap() {
+    map.setView([20, 0], 2);
+}
+
+// Download map data
+function downloadMapData() {
+    const csv = ['Name,Country,Status,Latitude,Longitude'];
+    markers.forEach(m => {
+        csv.push(`"${m.name}","${m.country}","${m.status}",${m.lat},${m.lng}`);
+    });
+    
+    const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', encodeURI(csvContent));
+    link.setAttribute('download', `mineral_map_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+}
+
+// Responsive map height
+function adjustMapHeight() {
+    const mapContainer = document.getElementById('mapContainer');
+    if (window.innerWidth < 992) {
+        mapContainer.style.minHeight = '400px';
+    } else {
+        mapContainer.style.minHeight = '70vh';
+    }
+}
+
+adjustMapHeight();
+window.addEventListener('resize', adjustMapHeight);
+</script>
 {% endblock %}

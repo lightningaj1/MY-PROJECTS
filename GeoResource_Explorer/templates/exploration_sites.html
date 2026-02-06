@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Exploration Sites - South Sudan{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Exploration Sites</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Filter</h5></div>
+        <div class="card-body">
+            <form method="GET" class="form-row">
+                <div class="form-group col-md-6">
+                    <select name="state" class="form-control">
+                        <option value="">All States</option>
+                        {% for s in states %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <select name="accessibility" class="form-control">
+                        <option value="">All Accessibility</option>
+                        <option value="accessible">Accessible</option>
+                        <option value="difficult">Difficult</option>
+                        <option value="impassable">Impassable</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Sites ({{ sites|length }})</h5></div>
+        <div class="card-body">
+            {% if sites %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>State</th>
+                            <th>Accessibility</th>
+                            <th>Security Status</th>
+                            <th>Exploration Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in sites %}
+                        <tr>
+                            <td><strong>{{ s.name }}</strong></td>
+                            <td>{{ s.state_name }}</td>
+                            <td><span class="badge badge-{% if s.accessibility == 'accessible' %}success{% elif s.accessibility == 'difficult' %}warning{% else %}danger{% endif %}">{{ s.accessibility }}</span></td>
+                            <td>{{ s.security_status }}</td>
+                            <td>{{ s.exploration_status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No sites found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

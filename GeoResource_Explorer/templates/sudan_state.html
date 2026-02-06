@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ state.name }} - Geological Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ state.name }} - Geological Profile</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Location</h5>
+                    <p><strong>Latitude:</strong> {{ "%.2f"|format(state.latitude) }}</p>
+                    <p><strong>Longitude:</strong> {{ "%.2f"|format(state.longitude) }}</p>
+                    <p><strong>Primary Minerals:</strong> {{ state.primary_minerals }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Summary</h5>
+                    <p><strong>Deposits:</strong> <span class="badge badge-info">{{ deposits|length }}</span></p>
+                    <p><strong>Exploration Sites:</strong> <span class="badge badge-success">{{ sites|length }}</span></p>
+                    <p><strong>Infrastructure:</strong> <span class="badge badge-warning">{{ infrastructure|length }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Deposits</h5></div>
+        <div class="card-body">
+            {% if deposits %}
+            <table class="table table-sm">
+                <thead>
+                    <tr><th>Name</th><th>Mineral</th><th>Status</th><th>Grade</th><th>Reserves</th></tr>
+                </thead>
+                <tbody>
+                    {% for d in deposits %}
+                    <tr>
+                        <td><a href="/deposits/{{ d.id }}">{{ d.name }}</a></td>
+                        <td>{{ d.mineral_name }}</td>
+                        <td><span class="badge badge-{% if d.status == 'active' %}success{% else %}secondary{% endif %}">{{ d.status }}</span></td>
+                        <td>{{ d.average_grade }}%</td>
+                        <td>{{ "{:,.0f}".format(d.estimated_reserves_tonnes) }} t</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No deposits in this state.</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Infrastructure</h5></div>
+        <div class="card-body">
+            {% if infrastructure %}
+            <table class="table table-sm">
+                <thead>
+                    <tr><th>Name</th><th>Type</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for i in infrastructure %}
+                    <tr>
+                        <td>{{ i.name }}</td>
+                        <td><span class="badge badge-secondary">{{ i.type }}</span></td>
+                        <td><span class="badge badge-{% if i.status == 'operational' %}success{% else %}warning{% endif %}">{{ i.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No infrastructure data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

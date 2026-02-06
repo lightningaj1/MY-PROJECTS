@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}Mining Regulations - South Sudan{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Mining Regulations & Requirements</h2>
+    
+    <div class="row">
+        {% for reg in regulations %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{{ reg.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ reg.description[:150] }}...</p>
+                    <p><strong>Authority:</strong> {{ reg.responsible_authority }}</p>
+                    <a href="/regulations/{{ reg.id }}" class="btn btn-sm btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

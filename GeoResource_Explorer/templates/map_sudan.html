@@ -1,0 +1,194 @@
+{% extends "layout.html" %}
+
+{% block title %}South Sudan Geological Map{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 0;">
+    <div class="row" style="margin: 0;">
+        
+        <!-- Map Container -->
+        <div class="col-md-9" style="padding: 0;">
+            <div id="map" style="width: 100%; height: calc(100vh - 60px);"></div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="col-md-3" style="padding: 15px; background: #f8f9fa; max-height: calc(100vh - 60px); overflow-y: auto;">
+            <h5>Map Controls</h5>
+            
+            <!-- Layer Toggles -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Layers</h6>
+                </div>
+                <div class="card-body">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="layerStates" checked>
+                        <label class="form-check-label" for="layerStates">States</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="layerDeposits" checked>
+                        <label class="form-check-label" for="layerDeposits">Deposits</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="layerSites" checked>
+                        <label class="form-check-label" for="layerSites">Exploration Sites</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="layerInfra" checked>
+                        <label class="form-check-label" for="layerInfra">Infrastructure</label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deposit Filter -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Filter Deposits</h6>
+                </div>
+                <div class="card-body">
+                    <select id="filterStatus" class="form-control form-control-sm mb-2">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="historical">Historical</option>
+                        <option value="prospect">Prospect</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Total Deposits:</strong> {{ deposits|length }}</p>
+                    <p><strong>States:</strong> {{ states|length }}</p>
+                    <p><strong>Exploration Sites:</strong> {{ sites|length }}</p>
+                    <p><strong>Infrastructure:</strong> {{ infrastructure|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Link Leaflet library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    // Initialize map centered on South Sudan
+    const map = L.map('map').setView([6.5, 31.5], 5);
+    
+    // Base layers
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Marker groups
+    const depositMarkers = L.featureGroup();
+    const siteMarkers = L.featureGroup();
+    const infraMarkers = L.featureGroup();
+    
+    // Deposit marker icons by mineral type
+    const mineralIcons = {
+        'Gold': '🟡',
+        'Diamond': '💎',
+        'Oil': '🛢️',
+        'Salt': '⚪',
+        'default': '📍'
+    };
+    
+    function getIcon(mineral) {
+        return mineralIcons[mineral] || mineralIcons['default'];
+    }
+    
+    // Add state boundaries
+    const states = {{ states|tojson }};
+    states.forEach(state => {
+        const circle = L.circle([state.latitude, state.longitude], {
+            color: 'blue',
+            fill: false,
+            weight: 2,
+            opacity: 0.5,
+            dashArray: '5, 5'
+        }).addTo(map);
+        circle.bindPopup(`<strong>${state.name}</strong><br/>Minerals: ${state.primary_minerals}`);
+    });
+    
+    // Add deposits
+    const deposits = {{ deposits|tojson }};
+    deposits.forEach(deposit => {
+        const icon = L.divIcon({
+            html: `<div style="font-size: 20px; text-align: center;">${getIcon(deposit.mineral)}</div>`,
+            className: 'deposit-icon'
+        });
+        
+        const marker = L.marker([deposit.latitude, deposit.longitude], {icon: icon})
+            .bindPopup(`
+                <strong>${deposit.name}</strong><br/>
+                Mineral: ${deposit.mineral}<br/>
+                Region: ${deposit.region}<br/>
+                Status: <span class="badge badge-${deposit.status === 'active' ? 'success' : 'secondary'}">${deposit.status}</span>
+            `)
+            .addTo(depositMarkers);
+    });
+    depositMarkers.addTo(map);
+    
+    // Add exploration sites
+    const sites = {{ sites|tojson }};
+    sites.forEach(site => {
+        const color = site.accessibility === 'accessible' ? 'green' : site.accessibility === 'difficult' ? 'orange' : 'red';
+        const marker = L.circleMarker([site.latitude, site.longitude], {
+            radius: 6,
+            color: color,
+            weight: 2,
+            fill: true,
+            fillColor: color,
+            fillOpacity: 0.6
+        })
+            .bindPopup(`
+                <strong>${site.name}</strong><br/>
+                Accessibility: ${site.accessibility}<br/>
+                Security: ${site.security_status}
+            `)
+            .addTo(siteMarkers);
+    });
+    siteMarkers.addTo(map);
+    
+    // Add infrastructure
+    const infra = {{ infrastructure|tojson }};
+    infra.forEach(item => {
+        const infraIcons = {'Road': '🛣️', 'Airport': '✈️', 'Port': '⚓', 'Power': '⚡', 'Water': '💧'};
+        const icon = L.divIcon({
+            html: `<div style="font-size: 18px;">${infraIcons[item.type] || '⭐'}</div>`,
+            className: 'infra-icon'
+        });
+        
+        const marker = L.marker([item.latitude, item.longitude], {icon: icon})
+            .bindPopup(`<strong>${item.name}</strong><br/>Type: ${item.type}<br/>Status: ${item.status}`)
+            .addTo(infraMarkers);
+    });
+    infraMarkers.addTo(map);
+    
+    // Layer control
+    document.getElementById('layerDeposits').addEventListener('change', function() {
+        this.checked ? map.addLayer(depositMarkers) : map.removeLayer(depositMarkers);
+    });
+    
+    document.getElementById('layerSites').addEventListener('change', function() {
+        this.checked ? map.addLayer(siteMarkers) : map.removeLayer(siteMarkers);
+    });
+    
+    document.getElementById('layerInfra').addEventListener('change', function() {
+        this.checked ? map.addLayer(infraMarkers) : map.removeLayer(infraMarkers);
+    });
+</script>
+
+<style>
+    .deposit-icon, .infra-icon {
+        background: transparent;
+        border: none;
+    }
+</style>
+{% endblock %}

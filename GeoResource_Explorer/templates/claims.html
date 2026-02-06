@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block title %}Mining Claims{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8"><h2>Mining Claims</h2></div>
+        <div class="col-md-4 text-right">
+            {% if session.get('user_id') %}
+            <a href="/claims/add" class="btn btn-primary">+ Add Claim</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header"><h5 class="mb-0">Search</h5></div>
+        <div class="card-body">
+            <form method="GET" class="form-row">
+                <div class="form-group col-md-8">
+                    <input type="text" name="q" class="form-control" placeholder="Search claim ID or company..." value="{{ search }}">
+                </div>
+                <div class="form-group col-md-2">
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="pending">Pending</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Claims ({{ claims|length }})</h5></div>
+        <div class="card-body">
+            {% if claims %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Claim ID</th>
+                            <th>Company</th>
+                            <th>Type</th>
+                            <th>Area (ha)</th>
+                            <th>Status</th>
+                            <th>Issue Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in claims %}
+                        <tr>
+                            <td><strong>{{ c.claim_id }}</strong></td>
+                            <td>{{ c.company_name }}</td>
+                            <td>{{ c.claim_type }}</td>
+                            <td>{{ "{:,}".format(c.area_hectares) }}</td>
+                            <td><span class="badge badge-{% if c.status == 'active' %}success{% else %}warning{% endif %}">{{ c.status }}</span></td>
+                            <td>{{ c.issue_date }}</td>
+                            <td><a href="/claims/{{ c.claim_id }}" class="btn btn-sm btn-primary">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No claims found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block title %}Mining Claims Map{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 0;">
+    <div class="row" style="margin: 0;">
+        
+        <!-- Map -->
+        <div class="col-md-9" style="padding: 0;">
+            <div id="map" style="width: 100%; height: calc(100vh - 60px);"></div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="col-md-3" style="padding: 15px; background: #f8f9fa; max-height: calc(100vh - 60px); overflow-y: auto;">
+            <h5>Mining Claims</h5>
+            
+            <!-- Status Filter -->
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select id="statusFilter" class="form-control form-control-sm">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="pending">Pending</option>
+                    <option value="expired">Expired</option>
+                </select>
+            </div>
+            
+            <!-- Type Filter -->
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select id="typeFilter" class="form-control form-control-sm">
+                    <option value="">All Types</option>
+                    <option value="exploration">Exploration</option>
+                    <option value="mining">Mining</option>
+                    <option value="processing">Processing</option>
+                </select>
+            </div>
+            
+            <!-- Statistics -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Total Claims:</strong> <span id="totalClaims">{{ claims|length }}</span></p>
+                    <p class="mb-1"><strong>Active:</strong> <span id="activeClaims">0</span></p>
+                    <p class="mb-0"><strong>Total Area:</strong> <span id="totalArea">0</span> ha</p>
+                </div>
+            </div>
+            
+            <!-- Claims List -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Claims List</h6>
+                </div>
+                <div class="card-body" id="claimsList" style="max-height: 350px; overflow-y: auto;">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    const allClaims = {{ claims|tojson }};
+    let circles = {};
+    
+    // Initialize map
+    const map = L.map('map').setView([6.5, 31.5], 4);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Status colors
+    const statusColors = {
+        'active': '#28a745',
+        'pending': '#ffc107',
+        'expired': '#dc3545'
+    };
+    
+    function createClaim(claim) {
+        // Calculate radius from hectares (rough approximation)
+        const radiusMeters = Math.sqrt(claim.area_hectares * 10000 / Math.PI);
+        
+        const color = statusColors[claim.status] || '#0000FF';
+        const circle = L.circle([claim.latitude, claim.longitude], {
+            radius: radiusMeters,
+            color: color,
+            weight: 2,
+            fill: true,
+            fillColor: color,
+            fillOpacity: 0.4
+        });
+        
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h6>${claim.claim_id}</h6>
+                <p class="mb-1"><strong>Company:</strong> ${claim.company_name}</p>
+                <p class="mb-1"><strong>Type:</strong> ${claim.claim_type}</p>
+                <p class="mb-1"><strong>Area:</strong> ${claim.area_hectares:,} hectares</p>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge" style="background: ${color};">${claim.status}</span></p>
+                ${claim.deposit_name ? `<p class="mb-0"><strong>Associated Deposit:</strong> ${claim.deposit_name}</p>` : ''}
+                <a href="/claims/${claim.id}" class="btn btn-sm btn-primary mt-2">View Details</a>
+            </div>
+        `;
+        
+        circle.bindPopup(popupContent);
+        circle.claim = claim;
+        
+        return circle;
+    }
+    
+    function filterAndDisplay() {
+        // Clear circles
+        Object.values(circles).forEach(c => c.remove());
+        circles = {};
+        
+        const statusFilter = document.getElementById('statusFilter').value;
+        const typeFilter = document.getElementById('typeFilter').value;
+        
+        let filtered = allClaims.filter(c => {
+            if (statusFilter && c.status !== statusFilter) return false;
+            if (typeFilter && c.claim_type !== typeFilter) return false;
+            return true;
+        });
+        
+        // Add circles and list
+        let listHtml = '';
+        let totalArea = 0;
+        let activeCount = 0;
+        
+        filtered.forEach(claim => {
+            const circle = createClaim(claim);
+            circle.addTo(map);
+            circles[claim.id] = circle;
+            
+            totalArea += claim.area_hectares;
+            if (claim.status === 'active') activeCount++;
+            
+            const color = statusColors[claim.status] || '#000000';
+            listHtml += `
+                <div class="p-2 border-bottom" style="cursor: pointer;" onclick="map.setView([${claim.latitude}, ${claim.longitude}], 11); circles[${claim.id}].openPopup();">
+                    <small>
+                        <strong>${claim.claim_id}</strong><br/>
+                        ${claim.company_name}<br/>
+                        <span class="badge" style="background: ${color};">${claim.status}</span>
+                    </small>
+                </div>
+            `;
+        });
+        
+        document.getElementById('activeClaims').textContent = activeCount;
+        document.getElementById('totalArea').textContent = Math.round(totalArea).toLocaleString();
+        document.getElementById('claimsList').innerHTML = listHtml;
+    }
+    
+    // Event listeners
+    document.getElementById('statusFilter').addEventListener('change', filterAndDisplay);
+    document.getElementById('typeFilter').addEventListener('change', filterAndDisplay);
+    
+    // Initial display
+    filterAndDisplay();
+</script>
+{% endblock %}

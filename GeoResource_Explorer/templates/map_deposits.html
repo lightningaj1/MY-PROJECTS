@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}Deposits Map{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 0;">
+    <div class="row" style="margin: 0;">
+        
+        <!-- Map -->
+        <div class="col-md-9" style="padding: 0;">
+            <div id="map" style="width: 100%; height: calc(100vh - 60px);"></div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="col-md-3" style="padding: 15px; background: #f8f9fa; max-height: calc(100vh - 60px); overflow-y: auto;">
+            <h5>Deposit Filters</h5>
+            
+            <!-- Mineral Filter -->
+            <div class="mb-3">
+                <label class="form-label">Mineral Type</label>
+                <select id="mineralFilter" class="form-control form-control-sm">
+                    <option value="">All Minerals</option>
+                    {% for mineral in minerals %}
+                    <option value="{{ mineral.id }}">{{ mineral.name }} ({{ mineral.category }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select id="statusFilter" class="form-control form-control-sm">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="historical">Historical</option>
+                    <option value="prospect">Prospect</option>
+                </select>
+            </div>
+            
+            <!-- Confidence Filter -->
+            <div class="mb-3">
+                <label class="form-label">Confidence Level</label>
+                <select id="confidenceFilter" class="form-control form-control-sm">
+                    <option value="">All Levels</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            
+            <!-- Results -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Deposits (<span id="depositCount">{{ deposits|length }}</span>)</h6>
+                </div>
+                <div class="card-body" id="depositList" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+    const allDeposits = {{ deposits|tojson }};
+    let markers = {};
+    
+    // Initialize map
+    const map = L.map('map').setView([6.5, 31.5], 4);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Mineral colors
+    const categoryColors = {
+        'precious': '#FFD700',
+        'industrial': '#808080',
+        'base_metal': '#FF6347',
+        'rare_earth': '#9370DB',
+        'fossil_fuel': '#000000'
+    };
+    
+    function createMarker(deposit) {
+        const color = categoryColors[deposit.category] || '#0000FF';
+        const icon = L.divIcon({
+            html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+            className: 'deposit-marker'
+        });
+        
+        const marker = L.marker([deposit.latitude, deposit.longitude], {icon: icon});
+        
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h6>${deposit.name}</h6>
+                <p class="mb-1"><strong>Mineral:</strong> ${deposit.mineral}</p>
+                <p class="mb-1"><strong>Region:</strong> ${deposit.region}</p>
+                <p class="mb-1"><strong>Status:</strong> <span class="badge badge-${deposit.status === 'active' ? 'success' : 'secondary'}">${deposit.status}</span></p>
+                <p class="mb-1"><strong>Grade:</strong> ${deposit.average_grade}%</p>
+                <p class="mb-1"><strong>Reserves:</strong> ${Math.round(deposit.estimated_reserves_tonnes):,} tonnes</p>
+                <p class="mb-0"><strong>Confidence:</strong> ${deposit.confidence_level}</p>
+                <a href="/deposits/${deposit.id}" class="btn btn-sm btn-primary mt-2">View Details</a>
+            </div>
+        `;
+        
+        marker.bindPopup(popupContent);
+        marker.deposit = deposit;
+        
+        return marker;
+    }
+    
+    function filterAndDisplay() {
+        // Clear markers
+        Object.values(markers).forEach(m => m.remove());
+        markers = {};
+        
+        const mineralFilter = document.getElementById('mineralFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const confidenceFilter = document.getElementById('confidenceFilter').value;
+        
+        let filtered = allDeposits.filter(d => {
+            if (mineralFilter && d.mineral_id != mineralFilter) return false;
+            if (statusFilter && d.status !== statusFilter) return false;
+            if (confidenceFilter && d.confidence_level !== confidenceFilter) return false;
+            return true;
+        });
+        
+        // Add markers and list
+        let listHtml = '';
+        filtered.forEach(deposit => {
+            const marker = createMarker(deposit);
+            marker.addTo(map);
+            markers[deposit.id] = marker;
+            
+            listHtml += `
+                <div class="p-2 border-bottom" style="cursor: pointer;" onclick="map.setView([${deposit.latitude}, ${deposit.longitude}], 10); markers[${deposit.id}].openPopup();">
+                    <small><strong>${deposit.name}</strong><br/>
+                    ${deposit.mineral} • ${deposit.status}</small>
+                </div>
+            `;
+        });
+        
+        document.getElementById('depositCount').textContent = filtered.length;
+        document.getElementById('depositList').innerHTML = listHtml;
+    }
+    
+    // Event listeners
+    document.getElementById('mineralFilter').addEventListener('change', filterAndDisplay);
+    document.getElementById('statusFilter').addEventListener('change', filterAndDisplay);
+    document.getElementById('confidenceFilter').addEventListener('change', filterAndDisplay);
+    
+    // Initial display
+    filterAndDisplay();
+</script>
+{% endblock %}

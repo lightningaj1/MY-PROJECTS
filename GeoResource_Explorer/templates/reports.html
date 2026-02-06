@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}Geological Reports{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Geological Reports</h2>
+    
+    <div class="card">
+        <div class="card-header"><h5 class="mb-0">Available Reports ({{ reports|length }})</h5></div>
+        <div class="card-body">
+            {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Report Title</th>
+                            <th>Deposit</th>
+                            <th>Author</th>
+                            <th>Date</th>
+                            <th>Access Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reports %}
+                        <tr>
+                            <td><strong>{{ r.title }}</strong></td>
+                            <td>{{ r.deposit_name or 'General' }}</td>
+                            <td>{{ r.author_id }}</td>
+                            <td>{{ r.report_date }}</td>
+                            <td><span class="badge badge-{% if r.access_level == 'public' %}success{% elif r.access_level == 'restricted' %}warning{% else %}danger{% endif %}">{{ r.access_level }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No public reports available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

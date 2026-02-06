@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}South Sudan Geological Overview{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>South Sudan Geological Overview</h2>
+    
+    {% if stats %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total States</h5>
+                    <h2>{{ stats.total_states }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Deposits</h5>
+                    <h2>{{ stats.total_deposits }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Mineral Types</h5>
+                    <h2>{{ stats.mineral_types }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Exploration Sites</h5>
+                    <h2>{{ stats.exploration_sites }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">States Overview</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>State</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Primary Minerals</th>
+                            <th>Deposits</th>
+                            <th>Sites</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for state in states %}
+                        <tr>
+                            <td><strong>{{ state.name }}</strong></td>
+                            <td>{{ "%.2f"|format(state.latitude) if state.latitude else 'N/A' }}</td>
+                            <td>{{ "%.2f"|format(state.longitude) if state.longitude else 'N/A' }}</td>
+                            <td>{{ state.primary_minerals }}</td>
+                            <td><span class="badge bg-info">{{ state.deposit_count }}</span></td>
+                            <td><span class="badge bg-success">{{ state.site_count }}</span></td>
+                            <td>
+                                <a href="/sudan/{{ state.name }}" class="btn btn-sm btn-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

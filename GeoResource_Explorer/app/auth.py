@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.db import get_db
+from app.roles import ROLES
 
 def auth_routes(app):
 
@@ -29,16 +30,36 @@ def auth_routes(app):
     @app.route("/register", methods=["GET", "POST"])
     def register():
         if request.method == "POST":
+            username = request.form.get("username")
+            password = request.form.get("password")
+            confirm = request.form.get("confirm")
+            role = request.form.get("role", "viewer")
+            organization = request.form.get("organization", "")
+            expertise = request.form.get("expertise", "")
+            
+            # Validate password
+            if len(password) < 6:
+                return render_template("register.html", error="Password must be at least 6 characters", roles=ROLES)
+            
+            if password != confirm:
+                return render_template("register.html", error="Passwords do not match", roles=ROLES)
+            
+            # Validate role
+            if role not in ROLES:
+                role = "viewer"
+            
+            hash_pw = generate_password_hash(password)
             db = get_db()
-            hash_pw = generate_password_hash(request.form.get("password"))
+            
             try:
                 db.execute(
-                    "INSERT INTO users (username, hash) VALUES (?, ?)",
-                    (request.form.get("username"), hash_pw)
+                    """INSERT INTO users (username, hash, role, organization, expertise) 
+                       VALUES (?, ?, ?, ?, ?)""",
+                    (username, hash_pw, role, organization, expertise)
                 )
                 db.commit()
                 return redirect("/login")
             except:
-                return render_template("register.html", error="Username exists")
-
-        return render_template("register.html")
+                return render_template("register.html", error="Username already exists", roles=ROLES)
+        
+        return render_template("register.html", roles=ROLES)

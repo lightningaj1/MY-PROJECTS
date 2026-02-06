@@ -1,61 +1,420 @@
 {% extends "layout.html" %}
+
+{% block title %}{{ mineral.name }} - Mineral Details{% endblock %}
+
 {% block content %}
-<h2>{{ mineral.name }}</h2>
+<!-- Hero Section -->
+<div class="bg-gradient py-5 mb-4">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-light mb-3">
+                <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('minerals') }}">Mineral Database</a></li>
+                <li class="breadcrumb-item active">{{ mineral.name }}</li>
+            </ol>
+        </nav>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold mb-2">
+                    <i class="fas fa-gem text-warning me-3"></i>{{ mineral.name }}
+                </h1>
+                <p class="lead text-white-50 mb-3">
+                    <code class="text-white">{{ mineral.formula }}</code>
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if mineral.mineral_type %}
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-layer-group"></i> {{ mineral.mineral_type }}
+                    </span>
+                    {% endif %}
+                    {% if mineral.economic_importance %}
+                    <span class="badge bg-{% if mineral.economic_importance == 'High' %}danger{% elif mineral.economic_importance == 'Medium' %}warning{% else %}secondary{% endif %}">
+                        <i class="fas fa-coins"></i> {{ mineral.economic_importance }} Economic Value
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
+                    <button class="btn btn-light" onclick="addToFavorites({{ mineral.id }}, '{{ mineral.name }}')">
+                        <i class="fas fa-heart"></i> Add to Favorites
+                    </button>
+                    <button class="btn btn-outline-light" onclick="shareMineral('{{ mineral.name }}')">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-{% if mineral.image %}
-<img src="{{ mineral.image }}" alt="{{ mineral.name }}" style="max-width:100%; height:auto; border-radius:10px; margin-bottom:16px;">
-{% endif %}
-<p><strong>Formula:</strong> {{ mineral.formula }}</p>
-<p><strong>Properties:</strong> {{ mineral.properties }}</p>
-<p><strong>Uses:</strong> {{ mineral.uses }}</p>
-<p><strong>Economic Importance:</strong> {{ mineral.economic }}</p>
-<p><strong>Major Countries:</strong> {{ mineral.countries }}</p>
-{% if session.get('user_id') == 1 %}
-<form action="/delete/{{ mineral.id }}" method="post" onsubmit="return confirm('Delete this mineral permanently?');">
-    <button class="btn-danger">Delete Mineral</button>
+<div class="container">
+    <div class="row g-4 mb-5">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Overview Section -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Overview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if mineral.image %}
+                    <img src="{{ mineral.image }}" alt="{{ mineral.name }}" class="img-fluid rounded mb-4" style="max-height: 400px;">
+                    {% else %}
+                    <div class="bg-light p-5 text-center rounded mb-4">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    
+                    {% if mineral.properties or mineral.primary_use %}
+                    <div class="mb-3">
+                        {% if mineral.properties %}
+                        <h6 class="text-secondary fw-bold">
+                            <i class="fas fa-microscope"></i> Physical Properties
+                        </h6>
+                        <p class="mb-3">{{ mineral.properties }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    {% if mineral.primary_use %}
+                    <div>
+                        <h6 class="text-secondary fw-bold">
+                            <i class="fas fa-industry"></i> Primary Uses
+                        </h6>
+                        <p>{{ mineral.primary_use }}</p>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
 
-</form>
-{% endif %}
+            <!-- Detailed Properties -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> Mineral Properties
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="property-block">
+                                <h6 class="text-muted fw-bold small">
+                                    <i class="fas fa-hammer text-primary"></i> Hardness (Mohs)
+                                </h6>
+                                <p class="mb-2">
+                                    {% if mineral.hardness %}
+                                        {{ mineral.hardness }}
+                                    {% else %}
+                                        <span class="text-muted">Not recorded</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="property-block">
+                                <h6 class="text-muted fw-bold small">
+                                    <i class="fas fa-palette text-success"></i> Color
+                                </h6>
+                                <p class="mb-2">
+                                    {% if mineral.color %}
+                                        {{ mineral.color }}
+                                    {% else %}
+                                        <span class="text-muted">Not recorded</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="property-block">
+                                <h6 class="text-muted fw-bold small">
+                                    <i class="fas fa-weight"></i> Density (g/cm³)
+                                </h6>
+                                <p class="mb-2">
+                                    {% if mineral.density %}
+                                        {{ mineral.density }}
+                                    {% else %}
+                                        <span class="text-muted">Not recorded</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="property-block">
+                                <h6 class="text-muted fw-bold small">
+                                    <i class="fas fa-cube"></i> Crystal System
+                                </h6>
+                                <p class="mb-2">
+                                    {% if mineral.crystal_system %}
+                                        {{ mineral.crystal_system }}
+                                    {% else %}
+                                        <span class="text-muted">Not recorded</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<div id="map" style="height:400px;"></div>
+            <!-- Economic Information -->
+            {% if mineral.economic_importance or mineral.market_demand %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line"></i> Economic Profile
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if mineral.economic_importance %}
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0">
+                                <strong>Economic Importance:</strong>
+                                <div class="mt-2">
+                                    <span class="badge bg-{% if mineral.economic_importance == 'High' %}danger{% elif mineral.economic_importance == 'Medium' %}warning{% else %}secondary{% endif %} fs-6">
+                                        {{ mineral.economic_importance }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if mineral.market_demand %}
+                        <div class="col-md-6">
+                            <div class="alert alert-success mb-0">
+                                <strong>Market Demand:</strong>
+                                <div class="mt-2">
+                                    <span class="badge bg-{% if mineral.market_demand == 'High' %}info{% elif mineral.market_demand == 'Medium' %}secondary{% else %}light text-dark{% endif %} fs-6">
+                                        {{ mineral.market_demand }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
-{% if session.get('user_id') == 1 %}
-<a href="/edit/{{ mineral.id }}" class="btn-edit">Edit Mineral</a>
-{% endif %}
+            <!-- Global Distribution -->
+            {% if mineral.countries %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-globe"></i> Major Producing Countries
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% for country in mineral.countries.split(',') %}
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded text-center">
+                                <i class="fas fa-map-pin text-primary mb-2"></i>
+                                <p class="mb-0 fw-bold">{{ country.strip() }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
 
-<a href="/favorite/{{ mineral.id }}">Add to Favorites</a>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Info Card -->
+            <div class="card shadow-sm sticky-top mb-4" style="top: 80px;">
+                <div class="card-header bg-primary text-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-database"></i> Quick Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted fw-bold small">Chemical Formula:</label>
+                        <code class="d-block mt-2 bg-light p-2 rounded">{{ mineral.formula }}</code>
+                    </div>
+                    
+                    {% if mineral.mineral_type %}
+                    <div class="mb-3">
+                        <label class="text-muted fw-bold small">Classification:</label>
+                        <p class="mt-2 mb-0">{{ mineral.mineral_type }}</p>
+                    </div>
+                    {% endif %}
 
+                    <hr>
 
-<!-- Leaflet -->
- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
- <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
- <script>
-    // very small country -> lat/lon mapping for the sample set; extend as required
-    const countryCoords = {
-        'South Africa': [-30.5595, 22.9375],
-        'Australia': [-25.2744, 133.7751],
-        'China': [35.8617, 104.1954],
-        'Botswana': [-22.3285, 24.6849],
-        'Russia': [61.5240, 105.3188],
-        'United States': [37.0902, -95.7129],
-        'Chile': [-35.6751, -71.5430],
-        'Peru': [-9.1900, -75.0152],
-        'Brazil': [-14.2350, -51.9253],
-        'Iran': [32.4279, 53.6880]
-    };
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-star"></i> Key Indicators
+                        </h6>
+                        {% if mineral.economic_importance %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Economic Value:</span>
+                            <span class="badge bg-{% if mineral.economic_importance == 'High' %}danger{% elif mineral.economic_importance == 'Medium' %}warning{% else %}secondary{% endif %}">
+                                {{ mineral.economic_importance }}
+                            </span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if mineral.market_demand %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Market Demand:</span>
+                            <span class="badge bg-{% if mineral.market_demand == 'High' %}info{% elif mineral.market_demand == 'Medium' %}secondary{% else %}light text-dark{% endif %}">
+                                {{ mineral.market_demand }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
 
-    const map = L.map('map').setView([20,0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-    }).addTo(map);
+                    <hr>
 
+                    <div class="d-grid gap-2">
+                        {% if is_admin %}
+                        <a href="{{ url_for('admin_edit', id=mineral.id) }}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit Mineral
+                        </a>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteMineral({{ mineral.id }})">
+                            <i class="fas fa-trash"></i> Delete Mineral
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-primary btn-sm" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print / PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-    {% if mineral.countries %}
-    const countries = '{{ mineral.countries }}'.split(',').map(s => s.trim()).filter(Boolean);
-    {% else %}
-    const countries = [];
-    {% endif %}
+            <!-- Related Resources -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-link"></i> Related Resources
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <a href="{{ url_for('deposits') }}" class="text-decoration-none">
+                                <i class="fas fa-gem"></i> View Mineral Deposits
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('map_sudan') }}" class="text-decoration-none">
+                                <i class="fas fa-map"></i> Interactive Maps
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ url_for('prices') }}" class="text-decoration-none">
+                                <i class="fas fa-chart-line"></i> Commodity Prices
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('minerals') }}" class="text-decoration-none">
+                                <i class="fas fa-list"></i> Back to Catalog
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
- </script>
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.breadcrumb-light .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.breadcrumb-light .breadcrumb-item a:hover {
+    color: white;
+}
+
+.property-block {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    border-left: 3px solid #667eea;
+}
+
+.sticky-top {
+    z-index: 99;
+}
+
+@media (max-width: 768px) {
+    .sticky-top {
+        position: static;
+    }
+}
+
+@media print {
+    .btn, .navbar, footer, .sticky-top {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+function addToFavorites(mineralId, mineralName) {
+    alert(`Added "${mineralName}" to your favorites!`);
+    // In a real implementation, this would make an AJAX call to save to database
+}
+
+function shareMineral(mineralName) {
+    const url = window.location.href;
+    if (navigator.share) {
+        navigator.share({
+            title: mineralName,
+            text: `Check out this mineral: ${mineralName}`,
+            url: url
+        });
+    } else {
+        // Fallback
+        const text = `Check out ${mineralName}: ${url}`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text);
+            alert('Link copied to clipboard!');
+        }
+    }
+}
+
+function deleteMineral(mineralId) {
+    if (confirm('Are you sure you want to delete this mineral? This action cannot be undone.')) {
+        fetch(`/admin/delete/${mineralId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Mineral deleted successfully.');
+                window.location.href = '{{ url_for("minerals") }}';
+            } else {
+                alert('Error deleting mineral: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error.message);
+        });
+    }
+}
+</script>
 {% endblock %}
 

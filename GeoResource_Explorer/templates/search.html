@@ -1,16 +1,297 @@
 {% extends "layout.html" %}
-{% block content %}
-<h2>Search Minerals</h2>
-<form method="get" action="/search">
-    <input type="text" name="q" placeholder="Search..." value="{{ q or '' }}">
-    <button>Search</button>
-</form>
 
-<ul>
-    {% for m in results %}
-    <li><a href="/mineral/{{ m.id }}">{{ m.name }}</a></li>
+{% block title %}Search Minerals, Deposits & Resources{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <h1 class="display-5 fw-bold mb-3">
+            <i class="fas fa-search text-light me-3"></i>Comprehensive Search
+        </h1>
+        <p class="lead text-white-50">Find minerals, deposits, regulations, and geological data across our comprehensive database.</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Main Search Box -->
+    <div class="card shadow-lg mb-5">
+        <div class="card-body p-4">
+            <form method="get" action="{{ url_for('search') }}" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-0">
+                            <i class="fas fa-search text-primary"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control form-control-lg border-0 ps-0" 
+                               placeholder="Search minerals, deposits, regulations, locations..." 
+                               value="{{ q or '' }}" autofocus>
+                    </div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="fas fa-info-circle"></i> Search across all geological data, locations, and resources
+                    </small>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if q %}
+    <!-- Search Results -->
+    <div class="row mb-5">
+        <!-- Results Header -->
+        <div class="col-12 mb-4">
+            <h2 class="mb-1">
+                Search Results <span class="fw-light">"{{ q }}"</span>
+            </h2>
+            <p class="text-muted">
+                <i class="fas fa-info-circle"></i> Found {{ results|length }} result{% if results|length != 1 %}s{% endif %}
+            </p>
+        </div>
+
+        {% if results %}
+        <!-- Results Grid -->
+        <div class="col-12">
+            <div class="row g-4">
+                {% for result in results %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm result-card hover-lift">
+                        <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title mb-1">{{ result.name }}</h6>
+                                {% if result.formula %}
+                                <code class="text-muted small">{{ result.formula }}</code>
+                                {% endif %}
+                            </div>
+                            <!-- Type Badge -->
+                            {% if result.type %}
+                            <span class="badge bg-primary ms-2">{{ result.type }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary ms-2">Mineral</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Description/Properties -->
+                            <div class="mb-3">
+                                {% if result.properties %}
+                                <p class="small text-muted">{{ result.properties[:150] }}{% if result.properties|length > 150 %}...{% endif %}</p>
+                                {% elif result.region %}
+                                <p class="small text-muted">
+                                    <i class="fas fa-map-marker"></i> {{ result.region }}, {{ result.country }}
+                                </p>
+                                {% else %}
+                                <p class="small text-muted">Geological resource data available</p>
+                                {% endif %}
+                            </div>
+
+                            <!-- Info Tags -->
+                            <div class="d-flex flex-wrap gap-1">
+                                {% if result.mineral_type %}
+                                <span class="badge bg-warning text-dark small">
+                                    <i class="fas fa-tag"></i> {{ result.mineral_type }}
+                                </span>
+                                {% endif %}
+                                
+                                {% if result.status %}
+                                <span class="badge bg-{% if result.status == 'active' %}success{% elif result.status == 'prospect' %}info{% else %}secondary{% endif %} small">
+                                    {{ result.status|title }}
+                                </span>
+                                {% endif %}
+
+                                {% if result.economic_importance %}
+                                <span class="badge bg-{% if result.economic_importance == 'High' %}danger{% elif result.economic_importance == 'Medium' %}warning{% else %}light text-dark{% endif %} small">
+                                    <i class="fas fa-coins"></i> {{ result.economic_importance }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-light border-top">
+                            {% if result.id %}
+                            {% if result.mineral_type or result.formula %}
+                            <a href="{{ url_for('mineral', id=result.id) }}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Mineral
+                            </a>
+                            {% elif result.status %}
+                            <a href="{{ url_for('deposit_detail', deposit_id=result.id) }}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> View Deposit
+                            </a>
+                            {% else %}
+                            <button class="btn btn-primary btn-sm w-100" onclick="goToDetail({{ result.id }})">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- No Results -->
+        <div class="col-12">
+            <div class="alert alert-warning text-center py-5" role="alert">
+                <i class="fas fa-search fa-3x text-warning mb-3"></i>
+                <h5 class="mt-3">No Results Found</h5>
+                <p class="mb-3">We couldn't find anything matching "<strong>{{ q }}</strong>"</p>
+                <p class="mb-0">Try:</p>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check"></i> Using different keywords</li>
+                    <li><i class="fas fa-check"></i> Checking spelling</li>
+                    <li><i class="fas fa-check"></i> Browsing our mineral catalog or deposits database</li>
+                </ul>
+                <div class="mt-4">
+                    <a href="{{ url_for('minerals') }}" class="btn btn-primary btn-sm me-2">
+                        <i class="fas fa-list"></i> Browse Minerals
+                    </a>
+                    <a href="{{ url_for('deposits') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-gem"></i> Browse Deposits
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
     {% else %}
-    <li>No minerals found.</li>
-    {% endfor %}
-</ul>
+    <!-- Search Tips -->
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Search Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-search text-primary"></i> Search by Mineral
+                            </h6>
+                            <p class="small">Type the name of a mineral (e.g., "Gold", "Copper", "Diamond")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-gem text-warning"></i> Search by Deposit
+                            </h6>
+                            <p class="small">Find specific mineral deposits by name (e.g., "Carlin", "Olympic")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-globe text-danger"></i> Search by Location
+                            </h6>
+                            <p class="small">Search by country, region, or location (e.g., "South Africa", "Australia")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2">
+                                <i class="fas fa-filter text-info"></i> Search by Category
+                            </h6>
+                            <p class="small">Try searching by mineral type (e.g., "Oxide", "Sulfide", "Native")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-link"></i> Quick Links
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('minerals') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-crystal-structure"></i> Mineral Catalog
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('deposits') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-gem"></i> Deposits Database
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('sudan_overview') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-map"></i> South Sudan Data
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('prices') }}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="fas fa-chart-line"></i> Commodity Prices
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.input-group-lg .form-control {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.result-card {
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.result-card:hover {
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-5px);
+}
+
+.hover-lift {
+    cursor: pointer;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
+}
+
+@media (max-width: 768px) {
+    .input-group-lg {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+function goToDetail(id) {
+    // Default behavior - try mineral detail first
+    window.location.href = `/mineral/${id}`;
+}
+
+// Auto-focus on search input if there's no query
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput && !searchInput.value) {
+        searchInput.focus();
+    }
+});
+</script>
 {% endblock %}

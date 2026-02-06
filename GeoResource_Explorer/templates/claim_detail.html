@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ claim.claim_id }} - Claim Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ claim.claim_id }}</h2>
+    
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Claim Information</h6></div>
+                <div class="card-body">
+                    <p><strong>Company:</strong> {{ claim.company_name }}</p>
+                    <p><strong>Type:</strong> {{ claim.claim_type }}</p>
+                    <p><strong>Area:</strong> {{ "{:,}".format(claim.area_hectares) }} hectares</p>
+                    <p><strong>Location:</strong> {{ claim.location_description }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><h6 class="mb-0">Status</h6></div>
+                <div class="card-body">
+                    <p><span class="badge badge-lg badge-{% if claim.status == 'active' %}success{% else %}warning{% endif %}">{{ claim.status }}</span></p>
+                    <p><strong>Issue Date:</strong> {{ claim.issue_date }}</p>
+                    <p><strong>Expiry Date:</strong> {{ claim.expiry_date }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if licenses %}
+    <div class="card mb-4">
+        <div class="card-header"><h6 class="mb-0">Associated Licenses</h6></div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead><tr><th>License Type</th><th>Issue Date</th><th>Expiry Date</th></tr></thead>
+                <tbody>
+                    {% for l in licenses %}
+                    <tr>
+                        <td>{{ l.license_type }}</td>
+                        <td>{{ l.issue_date }}</td>
+                        <td>{{ l.expiry_date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <a href="/claims" class="btn btn-secondary">Back to Claims</a>
+</div>
+{% endblock %}

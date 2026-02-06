@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Search Minerals</h2>
+<form method="get" action="/search">
+    <input type="text" name="q" placeholder="Search..." value="{{ q or '' }}">
+    <button>Search</button>
+</form>
+
+<ul>
+    {% for m in results %}
+    <li><a href="/mineral/{{ m.id }}">{{ m.name }}</a></li>
+    {% else %}
+    <li>No minerals found.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

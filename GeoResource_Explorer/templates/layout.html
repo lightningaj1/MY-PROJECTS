@@ -3,58 +3,143 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>GeoResource Explorer</title>
+        <meta name="description" content="Professional geological resource explorer for South Sudan geological data, deposits, and mining information">
+        <title>GeoResource Explorer - Geological Data Platform</title>
 
-        <link rel="stylesheet" href="/static/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/style.css">
     </head>
     <body class="light">
-        <header class="site-header">
-            <div class="header-left">
-                <span class="logo">GeoResource Explorer</span>
-            </div>
+        <!-- Header -->
+        <header class="site-header sticky-top shadow-sm">
+            <nav class="navbar navbar-expand-lg navbar-light bg-white">
+                <div class="container-fluid">
+                    <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">
+                        <i class="fas fa-globe-africa"></i> GeoResource Explorer
+                    </a>
+                    
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-            <button id="menu-toggle" class="menu-toggle">Menu</button>
+                    <div class="collapse navbar-collapse" id="navbarContent">
+                        <ul class="navbar-nav ms-auto">
+                            {% if session.get('user_id') %}
+                            <!-- User Menu -->
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}"><i class="fas fa-search"></i> Search</a></li>
+                            
+                            <!-- Geological Data -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="geoDataDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-layer-group"></i> Geological Data
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="geoDataDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('sudan_overview') }}"><i class="fas fa-map"></i> South Sudan Overview</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('deposits') }}"><i class="fas fa-gem"></i> Deposits Database</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('exploration_sites') }}"><i class="fas fa-search-location"></i> Exploration Sites</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('regulations') }}"><i class="fas fa-file-contract"></i> Regulations</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('reports') }}"><i class="fas fa-file-pdf"></i> Reports</a></li>
+                                </ul>
+                            </li>
 
-            <nav class="navbar" id="navbar">
+                            <!-- Mapping & Analytics -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="mapsDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-map-location-dot"></i> Maps & Analytics
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="mapsDropdown">
+                                    <li><a class="dropdown-item" href="{{ url_for('map_sudan') }}"><i class="fas fa-globe"></i> Regional Map</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('map_deposits') }}"><i class="fas fa-gem"></i> Deposits Map</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('map_claims') }}"><i class="fas fa-certificate"></i> Claims Map</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('map_infrastructure') }}"><i class="fas fa-building"></i> Infrastructure</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('analytics') }}"><i class="fas fa-chart-bar"></i> Analytics Dashboard</a></li>
+                                </ul>
+                            </li>
 
-                <ul class="nav-links">
-                    {% if session.get('user_id') %}
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/search">Search</a></li>
-                    <li><a href="/map">Map</a></li>
-                    <li><a href="/favorites">Favorites</a></li>
-                    <li><a href="/prices">Prices</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('map_page') }}"><i class="fas fa-map"></i> Map</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('prices') }}"><i class="fas fa-coins"></i> Prices</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('favorites') }}"><i class="fas fa-heart"></i> Favorites</a></li>
+                            
+                            {% if session.get('user_id') and is_admin %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_page') }}"><i class="fas fa-cog"></i> Admin</a></li>
+                            {% endif %}
 
-                    {% if session.get('user_id') and is_admin %}
-                    <li><a href="/admin">Admin Upload</a></li>
-                    {% endif %}
-
-                    <li><a href="/logout">Logout</a></li>
-                    {% else %}
-                    <li><a href="/login">Login</a></li>
-                    <li><a href="/register">Register</a></li>
-                    {% endif %}
-                </ul>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                            </li>
+                            {% else %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('register') }}"><i class="fas fa-user-plus"></i> Register</a></li>
+                            {% endif %}
+                        </ul>
+                        
+                        <!-- Theme Toggle -->
+                        <button id="dark-toggle" class="btn btn-sm btn-outline-secondary ms-2">
+                            <i class="fas fa-moon"></i> Dark Mode
+                        </button>
+                    </div>
+                </div>
             </nav>
-            <button id="dark-toggle" class="dark-btn">dark mode</button>
         </header>
 
-        <main>
+        <!-- Main Content -->
+        <main class="py-4">
             {% block content %}{% endblock %}
         </main>
 
+        <!-- Footer -->
+        <footer class="bg-dark text-white py-5 mt-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5><i class="fas fa-globe-africa"></i> GeoResource Explorer</h5>
+                        <p>Professional geological data platform for South Sudan resource exploration and mining information.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Quick Links</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="{{ url_for('home') }}" class="text-white-50">Home</a></li>
+                            <li><a href="{{ url_for('sudan_overview') }}" class="text-white-50">South Sudan Overview</a></li>
+                            <li><a href="{{ url_for('analytics') }}" class="text-white-50">Analytics</a></li>
+                            <li><a href="{{ url_for('regulations') }}" class="text-white-50">Regulations</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Data Standards</h6>
+                        <p class="small text-white-50">
+                            Data compiled from geological surveys and exploration reports.
+                            <br><strong>Last Updated:</strong> June 2024
+                        </p>
+                    </div>
+                </div>
+                <hr class="bg-white-50">
+                <div class="text-center text-white-50">
+                    <small>&copy; 2026 GeoResource Explorer. Geological data platform.</small>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>
-            // Dark mode
+            // Dark mode toggle
             document.getElementById("dark-toggle").onclick = () => {
                 document.body.classList.toggle("dark");
                 document.body.classList.toggle("light");
+                localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
             };
 
-            // Mobile menu
-            document.getElementById("menu-toggle").onclick = () => {
-                document.getElementById("navbar").classList.toggle("open");
-            };
+            // Load saved theme
+            if (localStorage.getItem("theme") === "dark") {
+                document.body.classList.add("dark");
+                document.body.classList.remove("light");
+            }
         </script>
     </body>
 </html>

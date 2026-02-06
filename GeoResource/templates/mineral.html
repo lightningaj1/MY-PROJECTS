@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>{{ mineral.name }}</h2>
+
+{% if mineral.image %}
+<img src="{{ mineral.image }}" alt="{{ mineral.name }}" style="max-width:100%; height:auto; border-radius:10px; margin-bottom:16px;">
+{% endif %}
+<p><strong>Formula:</strong> {{ mineral.formula }}</p>
+<p><strong>Properties:</strong> {{ mineral.properties }}</p>
+<p><strong>Uses:</strong> {{ mineral.uses }}</p>
+<p><strong>Economic Importance:</strong> {{ mineral.economic }}</p>
+<p><strong>Major Countries:</strong> {{ mineral.countries }}</p>
+{% if session.get('user_id') == 1 %}
+<form action="/delete/{{ mineral.id }}" method="post" onsubmit="return confirm('Delete this mineral permanently?');">
+    <button class="btn-danger">Delete Mineral</button>
+
+</form>
+{% endif %}
+
+<div id="map" style="height:400px;"></div>
+
+{% if session.get('user_id') == 1 %}
+<a href="/edit/{{ mineral.id }}" class="btn-edit">Edit Mineral</a>
+{% endif %}
+
+<a href="/favorite/{{ mineral.id }}">Add to Favorites</a>
+
+
+<!-- Leaflet -->
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+ <script>
+    // very small country -> lat/lon mapping for the sample set; extend as required
+    const countryCoords = {
+        'South Africa': [-30.5595, 22.9375],
+        'Australia': [-25.2744, 133.7751],
+        'China': [35.8617, 104.1954],
+        'Botswana': [-22.3285, 24.6849],
+        'Russia': [61.5240, 105.3188],
+        'United States': [37.0902, -95.7129],
+        'Chile': [-35.6751, -71.5430],
+        'Peru': [-9.1900, -75.0152],
+        'Brazil': [-14.2350, -51.9253],
+        'Iran': [32.4279, 53.6880]
+    };
+
+    const map = L.map('map').setView([20,0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+
+
+    {% if mineral.countries %}
+    const countries = '{{ mineral.countries }}'.split(',').map(s => s.trim()).filter(Boolean);
+    {% else %}
+    const countries = [];
+    {% endif %}
+
+ </script>
+{% endblock %}
+

@@ -1,33 +1,315 @@
 {% extends "layout.html" %}
 
+{% block title %}Add New Mineral - GeoResource Explorer{% endblock %}
+
 {% block content %}
+<!-- Header -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-plus-circle text-light me-3"></i>Add New Mineral
+                </h1>
+                <p class="lead text-white-50">Enter detailed mineralogical data and properties</p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="container">
+    <div class="row">
+        <!-- Form -->
+        <div class="col-lg-8">
+            <form method="post" action="{{ url_for('admin_upload') }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- Basic Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-gem"></i> Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label fw-bold">
+                                    <i class="fas fa-tag text-primary"></i> Mineral Name
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                       placeholder="e.g., Gold, Diamond, Quartz" required>
+                                <small class="text-muted">Common or accepted mineral name</small>
+                                <div class="invalid-feedback">
+                                    Mineral name is required
+                                </div>
+                            </div>
 
-<h1>Add new mineral</h1>
+                            <div class="col-md-6">
+                                <label for="formula" class="form-label fw-bold">
+                                    <i class="fas fa-flask-vial text-primary"></i> Chemical Formula
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="formula" name="formula" 
+                                       placeholder="e.g., Au, SiO₂, CaCO₃">
+                                <small class="text-muted">Chemical composition notation</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<form method="post" action="/admin/upload" enctype="multipart/form-data">
-    <label>Name</label>
-    <input name="name" placeholder="Mineral name" required>
+                <!-- Physical Properties -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microscope"></i> Physical Properties
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="color" class="form-label fw-bold">Color</label>
+                                <input type="text" class="form-control" id="color" name="color" 
+                                       placeholder="e.g., Yellow, Blue, Colorless">
+                            </div>
 
-    <label>Formula</label>
-    <input name="formula" placeholder="Formula">
+                            <div class="col-md-6">
+                                <label for="hardness" class="form-label fw-bold">Hardness (Mohs Scale)</label>
+                                <input type="number" class="form-control" id="hardness" name="hardness" 
+                                       placeholder="1-10" min="1" max="10" step="0.1">
+                            </div>
 
-    <label>Properties</label>
-    <textarea name="properties" placeholder="Properties"></textarea>
+                            <div class="col-md-6">
+                                <label for="density" class="form-label fw-bold">Density (g/cm³)</label>
+                                <input type="number" class="form-control" id="density" name="density" 
+                                       placeholder="e.g., 19.3" step="0.01">
+                            </div>
 
-    <label>Uses</label>
-    <textarea name="uses" placeholder="Uses"></textarea>
+                            <div class="col-md-6">
+                                <label for="crystal_system" class="form-label fw-bold">Crystal System</label>
+                                <select class="form-select" id="crystal_system" name="crystal_system">
+                                    <option value="">Select one...</option>
+                                    <option value="Cubic">Cubic</option>
+                                    <option value="Tetragonal">Tetragonal</option>
+                                    <option value="Orthorhombic">Orthorhombic</option>
+                                    <option value="Monoclinic">Monoclinic</option>
+                                    <option value="Triclinic">Triclinic</option>
+                                    <option value="Hexagonal">Hexagonal</option>
+                                    <option value="Trigonal">Trigonal</option>
+                                </select>
+                            </div>
 
-    <label>Economic importance</label>
-    <textarea name="economic" placeholder="Economic importance"></textarea>
+                            <div class="col-md-12">
+                                <label for="properties" class="form-label fw-bold">
+                                    <i class="fas fa-align-left text-primary"></i> Detailed Properties
+                                </label>
+                                <textarea class="form-control" id="properties" name="properties" 
+                                          placeholder="Cleavage, luster, transparency, magnetic properties, refractive index..." rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <label>Major countries</label>
-    <input name="countries" placeholder="Major countries (comma separated)">
+                <!-- Uses and Economic Value -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-coins"></i> Uses & Economic Value
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="mineral_type" class="form-label fw-bold">Mineral Classification</label>
+                                <select class="form-select" id="mineral_type" name="mineral_type">
+                                    <option value="">Select classification...</option>
+                                    <option value="Native Element">Native Element</option>
+                                    <option value="Oxide">Oxide</option>
+                                    <option value="Sulfide">Sulfide</option>
+                                    <option value="Sulfate">Sulfate</option>
+                                    <option value="Carbonate">Carbonate</option>
+                                    <option value="Silicate">Silicate</option>
+                                    <option value="Halide">Halide</option>
+                                </select>
+                            </div>
 
-    image: <label>Image</label>
-    <input type="file" name="image">
+                            <div class="col-md-6">
+                                <label for="economic_importance" class="form-label fw-bold">Economic Importance</label>
+                                <select class="form-select" id="economic_importance" name="economic_importance">
+                                    <option value="">Select one...</option>
+                                    <option value="High">High - Major ore/gemstone</option>
+                                    <option value="Medium">Medium - Important industrial use</option>
+                                    <option value="Low">Low - Limited economic value</option>
+                                </select>
+                            </div>
 
-    <button type="submit">Add mineral</button>
-    </form>
+                            <div class="col-md-6">
+                                <label for="market_demand" class="form-label fw-bold">Market Demand</label>
+                                <select class="form-select" id="market_demand" name="market_demand">
+                                    <option value="">Select one...</option>
+                                    <option value="High">High - Strong market demand</option>
+                                    <option value="Medium">Medium - Moderate demand</option>
+                                    <option value="Low">Low - Limited demand</option>
+                                </select>
+                            </div>
 
+                            <div class="col-md-6">
+                                <label for="countries" class="form-label fw-bold">Major Producing Countries</label>
+                                <input type="text" class="form-control" id="countries" name="countries" 
+                                       placeholder="China, Russia, USA (comma-separated)">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="primary_use" class="form-label fw-bold">Primary Uses</label>
+                                <textarea class="form-control" id="primary_use" name="primary_use" 
+                                          placeholder="Industrial applications, jewelry, electronics, etc." rows="3"></textarea>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="economic" class="form-label fw-bold">Economic Analysis</label>
+                                <textarea class="form-control" id="economic" name="economic" 
+                                          placeholder="Price trends, market analysis, production statistics..." rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image and Media -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light border-bottom">
+                        <h5 class="mb-0">
+                            <i class="fas fa-image"></i> Image & Media
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="image" class="form-label fw-bold">Mineral Image</label>
+                            <div class="input-group mb-3">
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <span class="input-group-text">PNG, JPG, GIF (Max 5MB)</span>
+                            </div>
+                            <div id="imagePreview" class="mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex gap-2 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Add Mineral
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-redo"></i> Clear Form
+                    </button>
+                    <a href="{{ url_for('minerals') }}" class="btn btn-outline-danger btn-lg">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Sidebar Help -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-light border-bottom">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Form Guide
+                    </h6>
+                </div>
+                <div class="card-body small">
+                    <h6 class="fw-bold mb-2">Required Fields</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-check text-success"></i> Mineral Name</li>
+                        <li><i class="fas fa-check text-success"></i> Chemical Formula (optional)</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-2">Tips</h6>
+                    <ul class="list-unstyled text-muted small">
+                        <li><i class="fas fa-info-circle"></i> Use accurate mineral classifications</li>
+                        <li><i class="fas fa-info-circle"></i> Include representative specimen image</li>
+                        <li><i class="fas fa-info-circle"></i> Specify major producing regions</li>
+                        <li><i class="fas fa-info-circle"></i> Document current market value</li>
+                    </ul>
+
+                    <hr>
+
+                    <h6 class="fw-bold mb-2">Resources</h6>
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="#" class="text-decoration-none small">Mohs Hardness Scale</a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-decoration-none small">Crystal Systems Guide</a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-decoration-none small">Mineral Classification</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.text-white-50 {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-control, .form-select {
+    border-radius: 0.5rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.sticky-top {
+    z-index: 99;
+}
+
+@media (max-width: 768px) {
+    .sticky-top {
+        position: static;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+// Form validation
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+// Image preview
+document.getElementById('image').addEventListener('change', function(e) {
+    const preview = document.getElementById('imagePreview');
+    const file = e.target.files[0];
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            preview.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; height: auto; border-radius: 0.5rem;" alt="preview">`;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
 {% endblock %}

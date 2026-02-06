@@ -1,0 +1,381 @@
+{% extends "layout.html" %}
+
+{% block title %}Mineral Deposits Database{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="bg-gradient py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold mb-2">
+                    <i class="fas fa-gem text-primary me-3"></i>Mineral Deposits Database
+                </h1>
+                <p class="lead text-muted">Browse and analyze mineral deposits across regions. Access geological data, resource estimates, and operational details.</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="display-6 fw-bold text-primary">{{ deposits|length }}</div>
+                <p class="text-muted">Deposits Recorded</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-left-primary h-100">
+                <div class="card-body">
+                    <div class="text-primary fw-bold mb-2">
+                        <i class="fas fa-check-circle"></i> Active Deposits
+                    </div>
+                    <div class="display-6 fw-bold">
+                        {% set active_count = deposits|selectattr('status', 'equalto', 'active')|list|length %}
+                        {{ active_count }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-success h-100">
+                <div class="card-body">
+                    <div class="text-success fw-bold mb-2">
+                        <i class="fas fa-globe"></i> Total Reserves
+                    </div>
+                    <div class="display-6 fw-bold">
+                        {% set total_reserves = deposits|map(attribute='estimated_reserves_tonnes')|sum %}
+                        {{ "{:,.0f}".format(total_reserves / 1000000) }}M t
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info h-100">
+                <div class="card-body">
+                    <div class="text-info fw-bold mb-2">
+                        <i class="fas fa-map"></i> Countries
+                    </div>
+                    <div class="display-6 fw-bold">
+                        {% set countries_set = deposits|map(attribute='country')|unique|list %}
+                        {{ countries_set|length }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning h-100">
+                <div class="card-body">
+                    <div class="text-warning fw-bold mb-2">
+                        <i class="fas fa-filter"></i> Avg Grade
+                    </div>
+                    <div class="display-6 fw-bold">
+                        {% set avg_grade = (deposits|map(attribute='average_grade')|sum) / (deposits|length if deposits|length > 0 else 1) %}
+                        {{ "%.2f"|format(avg_grade) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Section -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-light border-bottom">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search"></i> Advanced Search & Filter
+                    </h5>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterForm">
+                        <i class="fas fa-sliders-h"></i> Toggle Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="collapse show" id="filterForm">
+            <div class="card-body">
+                <form method="GET" class="needs-validation">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-search text-primary"></i> Deposit Name
+                            </label>
+                            <input type="text" name="q" class="form-control" placeholder="Search deposit..." value="{{ search or '' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-gem text-warning"></i> Mineral Type
+                            </label>
+                            <select name="mineral" class="form-select">
+                                <option value="">All Minerals</option>
+                                {% for m in minerals %}
+                                <option value="{{ m.id }}">{{ m.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-signal text-success"></i> Status
+                            </label>
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="historical">Historical</option>
+                                <option value="prospect">Prospect</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt text-danger"></i> Country
+                            </label>
+                            <select name="country" class="form-select">
+                                <option value="">All Countries</option>
+                                {% for c in countries %}
+                                <option value="{{ c.country }}">{{ c.country }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <a href="{{ url_for('deposits') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                        </div>
+                        <div class="col-auto ms-auto">
+                            <button type="button" class="btn btn-outline-success" onclick="exportToCSV()">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-danger" onclick="window.print()">
+                                <i class="fas fa-file-pdf"></i> Print/PDF
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposits Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light border-bottom">
+            <h5 class="mb-0">
+                <i class="fas fa-table"></i> Deposits Database ({{ deposits|length }} records)
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if deposits %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle" id="depositsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%;">
+                                <i class="fas fa-gem text-primary"></i> Deposit Name
+                            </th>
+                            <th style="width: 15%;">
+                                <i class="fas fa-bars text-warning"></i> Mineral
+                            </th>
+                            <th style="width: 12%;">
+                                <i class="fas fa-globe text-danger"></i> Location
+                            </th>
+                            <th style="width: 10%;">
+                                <i class="fas fa-signal text-success"></i> Status
+                            </th>
+                            <th style="width: 12%;">
+                                <i class="fas fa-chart-bar text-info"></i> Grade / Reserves
+                            </th>
+                            <th style="width: 16%;" class="text-center">
+                                <i class="fas fa-cog"></i> Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in deposits %}
+                        <tr class="deposit-row" data-deposit-id="{{ d.id }}">
+                            <td>
+                                <strong class="text-dark">{{ d.name }}</strong>
+                                {% if d.discovery_year %}
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> Discovered {{ d.discovery_year }}
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-warning text-dark">{{ d.mineral_name }}</span>
+                            </td>
+                            <td>
+                                <div>{{ d.country }}</div>
+                                <small class="text-muted">{{ d.region }}</small>
+                            </td>
+                            <td>
+                                {% if d.status == 'active' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Active
+                                    </span>
+                                {% elif d.status == 'prospect' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-compass"></i> Prospect
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-history"></i> Historical
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <i class="fas fa-tint text-primary"></i> {{ d.average_grade }}% grade
+                                </div>
+                                <div class="small">
+                                    <i class="fas fa-weight"></i> {{ "{:,.0f}".format(d.estimated_reserves_tonnes) }} t
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('deposit_detail', deposit_id=d.id) }}" class="btn btn-sm btn-primary" title="View Details">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                                <button class="btn btn-sm btn-outline-info" onclick="addToWatchlist({{ d.id }}, '{{ d.name }}')" title="Add to Watchlist">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center py-5" role="alert">
+                <i class="fas fa-search fa-3x text-info mb-3"></i>
+                <h5 class="mt-3">No Deposits Found</h5>
+                <p class="mb-0">No deposits match your search criteria. Try adjusting your filters.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.border-left-primary {
+    border-left: 4px solid #667eea !important;
+}
+
+.border-left-success {
+    border-left: 4px solid #28a745 !important;
+}
+
+.border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+}
+
+.border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+}
+
+.card {
+    border: 1px solid #dee2e6;
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+    .table-responsive table {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media print {
+    .toolbar, .card-header, .btn, .collapse {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+    }
+    
+    table {
+        font-size: 11pt;
+    }
+}
+</style>
+
+<!-- Scripts -->
+<script>
+function exportToCSV() {
+    const table = document.getElementById('depositsTable');
+    let csv = [];
+    
+    // Headers
+    const headers = [];
+    table.querySelectorAll('thead th').forEach(th => {
+        headers.push(th.textContent.trim().replace(/\n/g, ' '));
+    });
+    csv.push(headers.join(','));
+    
+    // Rows
+    table.querySelectorAll('tbody tr').forEach(tr => {
+        const row = [];
+        tr.querySelectorAll('td').forEach(td => {
+            let text = td.textContent.trim().replace(/\n/g, ' ');
+            text = text.replace(/,/g, ';'); // Escape commas
+            row.push(`"${text}"`);
+        });
+        csv.push(row.join(','));
+    });
+    
+    // Download
+    const csvContent = 'data:text/csv;charset=utf-8,' + csv.join('\n');
+    const link = document.createElement('a');
+    link.setAttribute('href', encodeURI(csvContent));
+    link.setAttribute('download', `deposits_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+}
+
+function addToWatchlist(depositId, depositName) {
+    alert(`Added "${depositName}" to your watchlist!`);
+    // In a real implementation, this would make an AJAX call to save to database
+}
+
+// Bootstrap validation
+(() => {
+    'use strict';
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

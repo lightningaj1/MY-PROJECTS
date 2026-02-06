@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Mining Claim{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Add New Mining Claim</h2>
+    
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Claim ID *</label>
+                        <input type="text" name="claim_id" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Company Name *</label>
+                        <input type="text" name="company_name" class="form-control" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Claim Type</label>
+                        <select name="claim_type" class="form-control">
+                            <option value="exploration">Exploration</option>
+                            <option value="mining">Mining</option>
+                            <option value="processing">Processing</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Area (hectares) *</label>
+                        <input type="number" name="area" class="form-control" step="0.01" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Location Description</label>
+                    <textarea name="location" class="form-control" rows="2"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Latitude</label>
+                        <input type="number" name="latitude" class="form-control" step="0.0001">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Longitude</label>
+                        <input type="number" name="longitude" class="form-control" step="0.0001">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Issue Date</label>
+                        <input type="date" name="issue_date" class="form-control">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Expiry Date</label>
+                        <input type="date" name="expiry_date" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Associated Deposit</label>
+                    <select name="deposit_id" class="form-control">
+                        <option value="">None</option>
+                        {% for d in deposits %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Submit Claim</button>
+                <a href="/claims" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

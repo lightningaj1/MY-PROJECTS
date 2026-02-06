@@ -1,6 +1,9 @@
 from flask import session
 from app.db import get_db
+import pathlib
 
+UPLOAD_FOLDER = pathlib.Path("static/images")
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 def allowed_file(filename):

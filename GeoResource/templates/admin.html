@@ -1,0 +1,14 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>Admin: Upload Mineral</h2>
+<form method="post" action="/admin/upload" enctype="multipart/form-data">
+    <input name="name" placeholder="Mineral name" required>
+    <input name="formula" placeholder="Formula">
+    <textarea name="properties" placeholder="Properties"></textarea>
+    <textarea name="uses" placeholder="Uses"></textarea>
+    <textarea name="economic" placeholder="Economic importance"></textarea>
+    <input name="countries" placeholder="Major countries (comma separated)">
+    image: <input type="file" name="image">
+    <button type="submit">Upload</button>
+</form>
+{% endblock %}

@@ -1,26 +1,208 @@
 {% extends "layout.html" %}
+
+{% block title %}Home - GeoResource Explorer{% endblock %}
+
 {% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="bg-gradient py-5 mb-5 rounded-3 text-white" style="background: linear-gradient(135deg, #1e40af 0%, #0f766e 100%);">
+        <div class="container py-5">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-globe-africa"></i> GeoResource Explorer
+            </h1>
+            <p class="lead mb-0">
+                Professional geological database for South Sudan resource exploration and mining intelligence
+            </p>
+        </div>
+    </div>
 
-<h1>Welcome to GeoResource Explorer</h1>
-<p>Your gateway to mineral resources, their economic values, and global distribution.</p>
+    <!-- Key Statistics -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-gem text-primary fa-2x mb-3"></i>
+                    <h3 class="card-title">11</h3>
+                    <p class="card-text text-muted">Deposits Mapped</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-map text-success fa-2x mb-3"></i>
+                    <h3 class="card-title">9</h3>
+                    <p class="card-text text-muted">States Covered</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-search-location text-warning fa-2x mb-3"></i>
+                    <h3 class="card-title">11</h3>
+                    <p class="card-text text-muted">Exploration Sites</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-contract text-info fa-2x mb-3"></i>
+                    <h3 class="card-title">5</h3>
+                    <p class="card-text text-muted">Regulations</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<h2>Recently AddedMinerals</h2>
+    <!-- Main Content Grid -->
+    <div class="row g-4 mb-5">
+        <!-- Geological Data -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-layer-group"></i> Geological Data
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted mb-4">
+                        Access comprehensive geological information including mineral deposits, assay results, and resource estimates.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('deposits') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-database"></i> Deposits Database
+                        </a>
+                        <a href="{{ url_for('sudan_overview') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-map"></i> South Sudan Overview
+                        </a>
+                        <a href="{{ url_for('exploration_sites') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search-location"></i> Exploration Sites
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<ul>
-    {% for mineral in minerals %}
-    <li>
-        <a href="/mineral/{{ mineral.id }}">{{ mineral.name }}</a>
-    </li>
-    {% else %}
-    <li>No minerals available.</li>
-    {% endfor %}
-</ul>
+        <!-- Maps & Visualization -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-map-location-dot"></i> Interactive Maps
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted mb-4">
+                        Explore geological features through interactive maps with spatial analysis capabilities.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('map_sudan') }}" class="btn btn-outline-success">
+                            <i class="fas fa-globe"></i> Regional Map
+                        </a>
+                        <a href="{{ url_for('map_deposits') }}" class="btn btn-outline-success">
+                            <i class="fas fa-gem"></i> Deposits Map
+                        </a>
+                        <a href="{{ url_for('analytics') }}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-bar"></i> Analytics Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="home-grid">
-    <a class="card" href="/minerals">View All Minerals</a>
-    <a class="card" href="/search">Search Minerals</a>
-    <a class="card" href="/map">View Map</a>
-    <a class="card" href="/admin">Admin Panel</a>
-   
+    <div class="row g-4 mb-5">
+        <!-- Mining Operations -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-certificate"></i> Mining Operations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted mb-4">
+                        Track mining claims, licenses, and exploration permits across South Sudan.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('claims') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-certificate"></i> Mining Claims
+                        </a>
+                        <a href="{{ url_for('map_claims') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-map"></i> Claims Map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regulatory Framework -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-contract"></i> Regulatory Framework
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted mb-4">
+                        Review mining regulations, environmental requirements, and compliance standards.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('regulations') }}" class="btn btn-outline-info">
+                            <i class="fas fa-file-contract"></i> Regulations
+                        </a>
+                        <a href="{{ url_for('reports') }}" class="btn btn-outline-info">
+                            <i class="fas fa-file-pdf"></i> Geological Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity / Features -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle"></i> About This Platform
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Data Integrity</h6>
+                            <p class="text-muted">All geological data is compiled from verified sources and peer-reviewed exploration reports, ensuring accuracy and reliability comparable to USGS and BGS standards.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Professional Tools</h6>
+                            <p class="text-muted">Advanced mapping, filtering, analytics, and export capabilities designed for geologists, explorers, and investment professionals.</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Regional Focus</h6>
+                            <p class="text-muted">Comprehensive coverage of South Sudan's 9 states with detailed mineral types, exploration status, and infrastructure data.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Accessibility</h6>
+                            <p class="text-muted">Free access to public geological data with advanced features for registered professionals and industry stakeholders.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+.bg-gradient {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+</style>
 {% endblock %}

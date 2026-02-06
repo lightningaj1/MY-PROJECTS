@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h1>Welcome to GeoResource Explorer</h1>
+<p>Your gateway to mineral resources, their economic values, and global distribution.</p>
+
+<h2>Recently AddedMinerals</h2>
+
+<ul>
+    {% for mineral in minerals %}
+    <li>
+        <a href="/mineral/{{ mineral.id }}">{{ mineral.name }}</a>
+    </li>
+    {% else %}
+    <li>No minerals available.</li>
+    {% endfor %}
+</ul>
+
+<div class="home-grid">
+    <a class="card" href="/minerals">View All Minerals</a>
+    <a class="card" href="/search">Search Minerals</a>
+    <a class="card" href="/map">View Map</a>
+    <a class="card" href="/admin">Admin Panel</a>
+   
+</div>
+{% endblock %}
