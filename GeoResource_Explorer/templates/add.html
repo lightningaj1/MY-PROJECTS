@@ -22,6 +22,8 @@
         <!-- Form -->
         <div class="col-lg-8">
             <form method="post" action="{{ url_for('admin_upload') }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- CSRF Token (Required for security) -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <!-- Basic Information -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light border-bottom">

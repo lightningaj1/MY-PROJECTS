@@ -24,6 +24,8 @@
                 </div>
                 <div class="card-body">
                     <form method="POST">
+                        <!-- CSRF Token (Required for security) -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <!-- Basic Information -->
                         <div class="mb-4">
                             <h6 class="fw-bold text-primary mb-3">

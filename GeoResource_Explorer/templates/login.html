@@ -28,6 +28,9 @@
                         {% endif %}
 
                         <form method="post" class="needs-validation" novalidate>
+                            <!-- CSRF Token (Required for security) -->
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
                             <!-- Username -->
                             <div class="mb-3">
                                 <label for="username" class="form-label fw-bold">

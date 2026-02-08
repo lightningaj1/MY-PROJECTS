@@ -35,6 +35,8 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <form method="POST" class="needs-validation">
+                        <!-- CSRF Token (Required for security) -->
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                         <!-- Title -->
                         <div class="mb-4">
                             <label for="title" class="form-label fw-bold">

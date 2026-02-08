@@ -9,6 +9,8 @@
     <div class="card">
         <div class="card-body">
             <form method="POST">
+                <!-- CSRF Token (Required for security) -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Claim ID *</label>
