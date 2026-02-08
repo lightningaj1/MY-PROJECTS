@@ -1,12 +1,12 @@
 # app.py
 from app import create_app
-import os
 
 app = create_app()
 
+# Only run locally (development)
 if __name__ == "__main__":
-    # Debug mode only in development (enable via environment variable)
+    import os
     debug_mode = os.environ.get('DEBUG', 'False') == 'True'
     port = int(os.environ.get('PORT', 5000))
-    
-    app.run(debug=debug_mode, port=port, host='127.0.0.1')
+    app.run(debug=debug_mode, host="0.0.0.0", port=port)
+
